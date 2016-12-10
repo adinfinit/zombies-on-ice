@@ -22,7 +22,7 @@ func NewParticles() *Particles { return &Particles{} }
 func (ps *Particles) Spawn(amount int, position g.V2, velocity g.V2, radius float32, spread float32) {
 	for i := 0; i < amount; i++ {
 		rotate := g.RandomBetween(-spread/2, spread/2)
-		speed := g.RandomBetween(-spread/2, spread/2)
+		speed := g.RandomBetween(-spread, spread)
 		ps.List = append(ps.List, &Particle{
 			Position: position,
 			Velocity: velocity.Rotate(rotate).Scale(1 + speed),
