@@ -17,9 +17,10 @@ const (
 type Game struct {
 	Assets *Assets
 
-	Room    *Room
-	Players []*Player
-	Zombies []*Zombie
+	Room      *Room
+	Players   []*Player
+	Zombies   []*Zombie
+	Particles *Particles
 
 	CameraShake float32
 
@@ -35,6 +36,8 @@ func NewGame() *Game {
 
 	game.Players = append(game.Players, NewPlayer(&Keyboard_1))
 	game.Players = append(game.Players, NewPlayer(&Keyboard_0))
+
+	game.Particles = NewParticles()
 
 	for i := 0; i < 10; i++ {
 		game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
@@ -83,6 +86,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, zombie := range game.Zombies {
 			for _, collision := range zombie.Collision {
 				amount += collision.Force.Length()
+
+				game.Particles.Spawn(16, collision.A.Position, collision.B.Velocity, 0.1, 0.4)
 			}
 		}
 		game.CameraShake += amount * 0.05
@@ -97,6 +102,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			entity.IntegrateForces(dt)
 		}
 
+		// update particles
+		game.Particles.Update(dt)
+
 		// apply constraints
 		for _, player := range game.Players {
 			player.ApplyConstraints(game.Room.Bounds)
@@ -106,6 +114,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, zombie := range game.Zombies {
 			zombie.Respawn(game.Room.Bounds)
 		}
+
+		// kill particles
+		game.Particles.Kill(game.Room.Bounds)
 	}
 
 	gl.ClearColor(0, 0, 0, 1)
@@ -154,6 +165,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, player := range game.Players {
 			player.Render(game)
 		}
+
+		game.Particles.Render(game)
 	}
 }
 

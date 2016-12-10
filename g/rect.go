@@ -14,6 +14,10 @@ func NewCircleRect(r float32) Rect {
 }
 
 func (r Rect) Size() V2 { return r.Max.Sub(r.Min) }
+func (r Rect) Contains(p V2) bool {
+	return (r.Min.X <= p.X) && (p.X <= r.Max.X) &&
+		(r.Min.Y <= p.Y) && (p.Y <= r.Max.Y)
+}
 
 func EnforceInside(pos, vel *V2, bounds Rect, dampening float32) {
 	minx, maxx := MinMax(bounds.Min.X, bounds.Max.X)
