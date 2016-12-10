@@ -20,3 +20,17 @@ func ApplyDeadZone(v float32, deadZone float32) float32 {
 	}
 	return 0.0
 }
+
+func Max(a, b float32) float32 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func Min(a, b float32) float32 {
+	if a < b {
+		return a
+	}
+	return b
+}

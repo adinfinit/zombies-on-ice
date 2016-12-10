@@ -3,6 +3,7 @@ package g
 import "math"
 
 const Pi = math.Pi
+const Tau = Pi * 2
 
 type Radian float32
 

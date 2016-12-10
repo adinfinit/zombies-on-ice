@@ -4,15 +4,24 @@ var Zero2 = V2{}
 
 type Rect struct{ Min, Max V2 }
 
-func (r Rect) Size() V2 {
-	return r.Max.Sub(r.Min)
+func NewRect(w, h float32) Rect {
+	return Rect{
+		V2{-w / 2, -h / 2},
+		V2{w / 2, h / 2},
+	}
 }
+
+func (r Rect) Size() V2 { return r.Max.Sub(r.Min) }
 
 type V2 struct{ X, Y float32 }
 
+// XY returns both components
+func (a V2) XY() (x, y float32)     { return a.X, a.Y }
+func (a V2) XYZ() (x, y, z float32) { return a.X, a.Y, 0 }
+
 // Add adds two vectors and returns the result
-func (a V2) Add(b V2) V2               { return V2{a.X + b.X, a.Y + b.Y} }
-func (a V2) AddMul(b V2, s float32) V2 { return V2{a.X + b.X*s, a.Y + b.Y*s} }
+func (a V2) Add(b V2) V2                 { return V2{a.X + b.X, a.Y + b.Y} }
+func (a V2) AddScale(b V2, s float32) V2 { return V2{a.X + b.X*s, a.Y + b.Y*s} }
 
 // Sub subtracts two vectors and returns the result
 func (a V2) Sub(b V2) V2 { return V2{a.X - b.X, a.Y - b.Y} }
@@ -38,13 +47,15 @@ func (a V2) Distance2(b V2) float32 {
 	return dx*dx + dy*dy
 }
 
-func (a V2) UnitNormalize() V2 {
+func (a V2) Normalize() V2 {
 	m := a.Length()
 	if m < 1 {
 		m = 1
 	}
 	return V2{a.X / m, a.Y / m}
 }
+
+func (a V2) Negate() V2 { return V2{-a.X, -a.Y} }
 
 // Cross product of a and b
 func (a V2) Cross(b V2) float32 { return a.X*b.Y - a.Y*b.X }
@@ -55,3 +66,6 @@ func (a V2) Rotate(angle float32) V2 {
 	cs, sn := Cos(angle), Sin(angle)
 	return V2{a.X*cs - a.Y*sn, a.X*sn + a.Y*cs}
 }
+
+func (a V2) Angle() float32 { return Atan2(a.Y, a.X) }
+func (a V2) Rotate90() V2   { return V2{-a.Y, a.X} }
