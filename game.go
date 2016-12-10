@@ -32,6 +32,7 @@ type Assets struct {
 	Player g.Texture
 	Rope   g.Texture
 	Hammer g.Texture
+	Ground g.Texture
 }
 
 type Game struct {
@@ -48,6 +49,9 @@ func NewGame() *Game {
 	game.Assets.Player.Path = "assets/player.png"
 	game.Assets.Rope.Path = "assets/rope.png"
 
+	game.Assets.Ground.Repeat = true
+	game.Assets.Ground.Path = "assets/ground.png"
+
 	return game
 }
 
@@ -55,13 +59,15 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	// dt := float32(now - game.Clock)
 	game.Clock = now
 
-	game.Assets.Hammer.Reload()
 	game.Assets.Player.Reload()
+	game.Assets.Hammer.Reload()
 	game.Assets.Rope.Reload()
+
+	game.Assets.Ground.Reload()
 
 	// SCENE
 	gl.ClearColor(1, 1, 1, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.Clear(gl.COLOR_BUFFER_BIT) // | gl.DEPTH_BUFFER_BIT)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
@@ -81,20 +87,23 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.Enable(gl.TEXTURE_2D)
-	gl.BindTexture(gl.TEXTURE_2D, game.Assets.Player.ID)
+	gl.BindTexture(gl.TEXTURE_2D, game.Assets.Ground.ID)
 
 	{
 		gl.Color4f(1, 1, 1, 1)
 		gl.Begin(gl.QUADS)
 		{
-			gl.TexCoord2f(0, 1)
+			gl.TexCoord2f(0, 10)
 			gl.Vertex2f(0, 0)
+
 			gl.TexCoord2f(0, 0)
-			gl.Vertex2f(0, 1)
-			gl.TexCoord2f(1, 0)
-			gl.Vertex2f(1, 1)
-			gl.TexCoord2f(1, 1)
-			gl.Vertex2f(1, 0)
+			gl.Vertex2f(0, 9)
+
+			gl.TexCoord2f(10, 0)
+			gl.Vertex2f(9, 9)
+
+			gl.TexCoord2f(10, 10)
+			gl.Vertex2f(9, 0)
 		}
 		gl.End()
 	}
@@ -103,7 +112,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 }
 
 func (game *Game) Unload() {
+	game.Assets.Player.Delete()
 	game.Assets.Hammer.Delete()
 	game.Assets.Rope.Delete()
-	game.Assets.Hammer.Delete()
+	game.Assets.Ground.Delete()
 }

@@ -20,9 +20,10 @@ type Texture struct {
 	modtime time.Time
 	lasterr error
 
-	RGBA *image.RGBA
-	Size V2
-	ID   uint32
+	Repeat bool
+	RGBA   *image.RGBA
+	Size   V2
+	ID     uint32
 }
 
 func (tex *Texture) check(err error) bool {
@@ -66,10 +67,19 @@ func (tex *Texture) Upload() {
 	gl.Enable(gl.TEXTURE_2D)
 	gl.GenTextures(1, &tex.ID)
 	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	if tex.Repeat {
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
+	} else {
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+	}
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
