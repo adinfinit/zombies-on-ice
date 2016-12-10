@@ -15,6 +15,9 @@ func (a V2) AddScale(b V2, s float32) V2 { return V2{a.X + b.X*s, a.Y + b.Y*s} }
 // Sub subtracts two vectors and returns the result
 func (a V2) Sub(b V2) V2 { return V2{a.X - b.X, a.Y - b.Y} }
 
+// Dot calculates the dot product
+func (a V2) Dot(b V2) float32 { return a.X*b.X + a.Y*b.Y }
+
 // Scale scales each component and returns the result
 func (a V2) Scale(s float32) V2 { return V2{a.X * s, a.Y * s} }
 
@@ -57,4 +60,7 @@ func (a V2) Rotate(angle float32) V2 {
 }
 
 func (a V2) Angle() float32 { return Atan2(a.Y, a.X) }
-func (a V2) Rotate90() V2   { return V2{-a.Y, a.X} }
+
+func (a V2) Rotate90() V2  { return V2{-a.Y, a.X} }
+func (a V2) Rotate90c() V2 { return V2{a.Y, -a.X} }
+func (a V2) Rotate180() V2 { return V2{-a.X, -a.Y} }

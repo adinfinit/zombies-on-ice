@@ -36,7 +36,7 @@ type Hammer struct {
 	VelocityDampening float32
 }
 
-func (player *Player) Update(game *Game, dt float32) {
+func (player *Player) AddForces(game *Game, dt float32) {
 	hammer := &player.Hammer
 
 	const force = 30
@@ -48,9 +48,9 @@ func (player *Player) Update(game *Game, dt float32) {
 			player.Force = in.Direction.Scale(force)
 			// todo scale lateral movement
 
-			// dir := player.Force
-			// player.Direction = player.Direction.AddScale(dir, dt)
-			// player.Direction = player.Direction.Normalize()
+			lateral := in.Direction.Rotate90c().Normalize()
+			scale := lateral.Dot(player.Velocity)
+			player.Force = player.Force.Add(lateral.Scale(-scale * 2.0))
 		} else {
 			player.Force = player.Velocity.Normalize().Negate().Scale(force)
 		}
@@ -79,6 +79,12 @@ func (player *Player) Update(game *Game, dt float32) {
 			hammer.Position = player.Position.AddScale(dist, hammer.MaxLength/n)
 		}
 	}
+}
+
+func (player *Player) IntegrateForces(game *Game, dt float32) {
+	hammer := &player.Hammer
+
+	const maxspeed = 20
 
 	{ // player physics
 		player.Velocity = player.Velocity.AddScale(player.Force, dt)
@@ -101,6 +107,11 @@ func (player *Player) Update(game *Game, dt float32) {
 		dir := hammer.Position.Sub(player.Position)
 		hammer.Direction = hammer.Direction.AddScale(dir, 100*dt).Normalize()
 	}
+}
+
+func (player *Player) Update(game *Game, dt float32) {
+	player.AddForces(game, dt)
+	player.IntegrateForces(game, dt)
 }
 
 func (player *Player) Render(game *Game) {
@@ -229,15 +240,16 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.ALPHA_TEST)
 
+	game.Room.Render(game)
+
 	Keyboard_1.Update(&game.Player.Controller, window)
 	game.Player.Update(game, dt)
 
-	//Keyboard_0.Update(&game.Player2.Controller, window)
-	//game.Player2.Update(game, dt)
+	Keyboard_0.Update(&game.Player2.Controller, window)
+	game.Player2.Update(game, dt)
 
-	game.Room.Render(game)
 	game.Player.Render(game)
-	//game.Player2.Render(game)
+	game.Player2.Render(game)
 
 	RenderAxis()
 }
