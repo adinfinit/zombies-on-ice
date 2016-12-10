@@ -14,6 +14,10 @@ func Sqrt(v float32) float32 {
 	return float32(math.Sqrt(float64(v)))
 }
 
+func Pow(v, e float32) float32 {
+	return float32(math.Pow(float64(v), float64(e)))
+}
+
 func ApplyDeadZone(v float32, deadZone float32) float32 {
 	if v < -deadZone {
 		return (v + deadZone) / (1 - deadZone)

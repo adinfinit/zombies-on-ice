@@ -11,6 +11,11 @@ func RandomV2(r Rect) V2 {
 	}
 }
 
+func RandomV2Circle(radius float32) V2 {
+	v := V2{RandomBetween(-1, 1), RandomBetween(-1, 1)}
+	return v.Normalize().Scale(radius)
+}
+
 // XY returns both components
 func (a V2) XY() (x, y float32)     { return a.X, a.Y }
 func (a V2) XYZ() (x, y, z float32) { return a.X, a.Y, 0 }

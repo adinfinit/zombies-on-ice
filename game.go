@@ -21,6 +21,8 @@ type Game struct {
 	Players []*Player
 	Zombies []*Zombie
 
+	CameraShake float32
+
 	Clock float64
 }
 
@@ -46,41 +48,6 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	game.Clock = now
 
 	game.Assets.Reload()
-
-	gl.ClearColor(0, 0, 0, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
-	gl.MatrixMode(gl.MODELVIEW)
-	gl.LoadIdentity()
-
-	width, height := window.GetSize()
-	gl.Viewport(0, 0, int32(width), int32(height))
-
-	screenRatio := float32(height) / float32(width)
-	roomSize := game.Room.Bounds.Size()
-
-	var screenSize g.V2
-	roomRatio := roomSize.Y / roomSize.X
-
-	if screenRatio < roomRatio {
-		screenSize.Y = roomSize.Y + 2
-		screenSize.X = screenSize.Y / screenRatio
-	} else {
-		screenSize.X = roomSize.X + 2
-		screenSize.Y = screenSize.X * screenRatio
-	}
-
-	gl.Ortho(
-		float64(-screenSize.X/2),
-		float64(screenSize.X/2),
-		float64(-screenSize.Y/2),
-		float64(screenSize.Y/2),
-		10, -10)
-
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Enable(gl.MULTISAMPLE)
-	gl.Enable(gl.ALPHA_TEST)
-
 	{
 		// list all entities
 		entities := []*Entity{}
@@ -111,6 +78,20 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		// update collision info
 		HandleCollisions(entities)
 
+		// update camera shake
+		amount := float32(0.0)
+		for _, zombie := range game.Zombies {
+			for _, collision := range zombie.Collision {
+				amount += collision.Force.Length()
+			}
+		}
+		game.CameraShake += amount * 0.05
+		game.CameraShake -= dt
+		game.CameraShake *= g.Pow(0.1, dt)
+		if game.CameraShake < 0 {
+			game.CameraShake = 0
+		}
+
 		// integrate forces
 		for _, entity := range entities {
 			entity.IntegrateForces(dt)
@@ -125,7 +106,45 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, zombie := range game.Zombies {
 			zombie.Respawn(game.Room.Bounds)
 		}
+	}
 
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
+
+	width, height := window.GetSize()
+	gl.Viewport(0, 0, int32(width), int32(height))
+
+	screenRatio := float32(height) / float32(width)
+	roomSize := game.Room.Bounds.Size()
+
+	var screenSize g.V2
+	roomRatio := roomSize.Y / roomSize.X
+
+	if screenRatio < roomRatio {
+		screenSize.Y = roomSize.Y + 2
+		screenSize.X = screenSize.Y / screenRatio
+	} else {
+		screenSize.X = roomSize.X + 2
+		screenSize.Y = screenSize.X * screenRatio
+	}
+
+	gl.Ortho(
+		float64(-screenSize.X/2),
+		float64(screenSize.X/2),
+		float64(-screenSize.Y/2),
+		float64(screenSize.Y/2),
+		10, -10)
+
+	gl.Translatef(g.RandomV2Circle(game.CameraShake).XYZ())
+
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.Enable(gl.MULTISAMPLE)
+	gl.Enable(gl.ALPHA_TEST)
+
+	{
 		game.Room.Render(game)
 
 		for _, zombie := range game.Zombies {
