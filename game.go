@@ -36,7 +36,7 @@ type Hammer struct {
 	VelocityDampening float32
 }
 
-func (player *Player) Update(dt float32) {
+func (player *Player) Update(game *Game, dt float32) {
 	hammer := &player.Hammer
 
 	const force = 30
@@ -85,6 +85,8 @@ func (player *Player) Update(dt float32) {
 		player.Velocity = g.ClampLength(player.Velocity, maxspeed)
 		player.Position = player.Position.AddScale(player.Velocity, dt)
 
+		g.EnforceInside(&player.Position, &player.Velocity, game.Room.Bounds, 0.2)
+
 		dir := player.Position.Sub(hammer.Position)
 		player.Direction = player.Direction.AddScale(dir, 100*dt).Normalize()
 	}
@@ -93,6 +95,8 @@ func (player *Player) Update(dt float32) {
 		hammer.Velocity = hammer.Velocity.AddScale(hammer.Force, dt)
 		hammer.Velocity = g.ClampLength(hammer.Velocity, maxspeed)
 		hammer.Position = hammer.Position.AddScale(hammer.Velocity, dt)
+
+		g.EnforceInside(&hammer.Position, &hammer.Velocity, game.Room.Bounds, 0.3)
 
 		dir := hammer.Position.Sub(player.Position)
 		hammer.Direction = hammer.Direction.AddScale(dir, 100*dt).Normalize()
@@ -155,8 +159,9 @@ func (room *Room) Render(game *Game) {
 type Game struct {
 	Assets *Assets
 
-	Player Player
-	Room   Room
+	Player  Player
+	Player2 Player
+	Room    Room
 
 	Clock float64
 }
@@ -170,6 +175,11 @@ func NewGame() *Game {
 	game.Player.Hammer.NormalLength = 1.5
 	game.Player.Hammer.MaxLength = 4
 	game.Player.Hammer.TensionMultiplier = 20
+
+	game.Player2.Hammer.Radius = 0.5
+	game.Player2.Hammer.NormalLength = 1.5
+	game.Player2.Hammer.MaxLength = 4
+	game.Player2.Hammer.TensionMultiplier = 20
 
 	game.Room.Bounds.Min = g.V2{-14, -8}
 	game.Room.Bounds.Max = g.V2{14, 8}
@@ -220,10 +230,14 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	gl.Enable(gl.ALPHA_TEST)
 
 	Keyboard_1.Update(&game.Player.Controller, window)
-	game.Player.Update(dt)
+	game.Player.Update(game, dt)
+
+	//Keyboard_0.Update(&game.Player2.Controller, window)
+	//game.Player2.Update(game, dt)
 
 	game.Room.Render(game)
 	game.Player.Render(game)
+	//game.Player2.Render(game)
 
 	RenderAxis()
 }

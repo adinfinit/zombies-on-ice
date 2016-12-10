@@ -2,17 +2,6 @@ package g
 
 var Zero2 = V2{}
 
-type Rect struct{ Min, Max V2 }
-
-func NewRect(w, h float32) Rect {
-	return Rect{
-		V2{-w / 2, -h / 2},
-		V2{w / 2, h / 2},
-	}
-}
-
-func (r Rect) Size() V2 { return r.Max.Sub(r.Min) }
-
 type V2 struct{ X, Y float32 }
 
 // XY returns both components

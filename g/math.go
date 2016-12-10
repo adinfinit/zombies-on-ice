@@ -34,3 +34,17 @@ func Min(a, b float32) float32 {
 	}
 	return b
 }
+
+func MinMax(a, b float32) (float32, float32) {
+	if a < b {
+		return a, b
+	}
+	return b, a
+}
+
+func Abs(a float32) float32 {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
