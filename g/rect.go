@@ -9,6 +9,10 @@ func NewRect(w, h float32) Rect {
 	}
 }
 
+func NewCircleRect(r float32) Rect {
+	return Rect{V2{-r, -r}, V2{r, r}}
+}
+
 func (r Rect) Size() V2 { return r.Max.Sub(r.Min) }
 
 func EnforceInside(pos, vel *V2, bounds Rect, dampening float32) {

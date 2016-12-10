@@ -4,6 +4,13 @@ var Zero2 = V2{}
 
 type V2 struct{ X, Y float32 }
 
+func RandomV2(r Rect) V2 {
+	return V2{
+		RandomBetween(r.Min.X, r.Max.X),
+		RandomBetween(r.Min.Y, r.Max.Y),
+	}
+}
+
 // XY returns both components
 func (a V2) XY() (x, y float32)     { return a.X, a.Y }
 func (a V2) XYZ() (x, y, z float32) { return a.X, a.Y, 0 }

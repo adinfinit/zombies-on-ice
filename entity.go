@@ -2,6 +2,11 @@ package main
 
 import "github.com/loov/zombieroom/g"
 
+type Collision struct {
+	A, B   *Entity
+	Normal g.V2
+}
+
 type Entity struct {
 	Position g.V2
 	Velocity g.V2
@@ -11,6 +16,8 @@ type Entity struct {
 	Radius     float32
 	Elasticity float32
 	Dampening  float32
+
+	Collision []Collision
 }
 
 func (en *Entity) Entities() []*Entity { return []*Entity{en} }
@@ -20,6 +27,8 @@ func (en *Entity) ResetForces() {
 	if en.Mass == 0 {
 		en.Mass = 1.0
 	}
+
+	en.Collision = nil
 }
 
 func (en *Entity) AddForce(force g.V2) {
@@ -37,4 +46,27 @@ func (en *Entity) IntegrateForces(dt float32) {
 
 func (en *Entity) ConstrainInside(rect g.Rect) {
 	g.EnforceInside(&en.Position, &en.Velocity, rect, en.Elasticity)
+}
+
+func HandleCollisions(entities []*Entity) {
+	const SafeZone = 0.9
+
+	for i, a := range entities {
+		for _, b := range entities[i+1:] {
+			dist := a.Position.Sub(b.Position)
+			if dist.Length() < (a.Radius+b.Radius)*SafeZone {
+				a.Collision = append(a.Collision, Collision{
+					A:      a,
+					B:      b,
+					Normal: g.V2{},
+				})
+
+				b.Collision = append(b.Collision, Collision{
+					A:      b,
+					B:      a,
+					Normal: g.V2{},
+				})
+			}
+		}
+	}
 }

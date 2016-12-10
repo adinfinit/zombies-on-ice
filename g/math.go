@@ -1,6 +1,9 @@
 package g
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 // Sqr returns the square of v
 func Sqr(v float32) float32 { return v * v }
@@ -19,6 +22,10 @@ func ApplyDeadZone(v float32, deadZone float32) float32 {
 		return (v - deadZone) / (1 - deadZone)
 	}
 	return 0.0
+}
+
+func RandomBetween(a, b float32) float32 {
+	return rand.Float32()*(b-a) + a
 }
 
 func Max(a, b float32) float32 {

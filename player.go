@@ -39,14 +39,15 @@ func NewPlayer(updater ControllerUpdater) *Player {
 	player := &Player{}
 	player.Updater = updater
 
-	player.Survivor.Elasticity = 0.2
+	player.Survivor.Radius = 0.5
 	player.Survivor.Mass = 1.0
+	player.Survivor.Elasticity = 0.2
 	player.Survivor.Dampening = 0.999
 
-	player.Hammer.Elasticity = 0.4
-
 	player.Hammer.Mass = 0.05
-	player.Hammer.Radius = 0.5
+	player.Hammer.Elasticity = 0.4
+	player.Hammer.Radius = 0.4
+
 	player.Hammer.NormalLength = 2
 	player.Hammer.MaxLength = 3
 	player.Hammer.TensionMultiplier = 20
@@ -118,7 +119,6 @@ func (player *Player) ApplyConstraints(bounds g.Rect) {
 	if n := dist.Length(); n > hammer.MaxLength {
 		hammer.Position = survivor.Position.AddScale(dist, hammer.MaxLength/n)
 	}
-	/**/
 }
 
 func (player *Player) Render(game *Game) {
@@ -141,7 +141,7 @@ func (player *Player) Render(game *Game) {
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/player.png")
-		tex.Draw(g.NewRect(1, 1))
+		tex.Draw(g.NewCircleRect(survivor.Radius))
 	}
 	gl.PopMatrix()
 
@@ -152,7 +152,7 @@ func (player *Player) Render(game *Game) {
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/hammer.png")
-		tex.Draw(g.NewRect(hammer.Radius*2, hammer.Radius*2))
+		tex.Draw(g.NewCircleRect(hammer.Radius))
 	}
 	gl.PopMatrix()
 }

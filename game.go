@@ -12,6 +12,7 @@ type Game struct {
 
 	Room    *Room
 	Players []*Player
+	Zombies []*Zombie
 
 	Clock float64
 }
@@ -21,10 +22,14 @@ func NewGame() *Game {
 
 	game.Assets = NewAssets()
 
+	game.Room = NewRoom()
+
 	game.Players = append(game.Players, NewPlayer(&Keyboard_1))
 	game.Players = append(game.Players, NewPlayer(&Keyboard_0))
 
-	game.Room = NewRoom()
+	for i := 0; i < 10; i++ {
+		game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
+	}
 
 	return game
 }
@@ -76,6 +81,10 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			entities = append(entities, player.Entities()...)
 		}
 
+		for _, zombie := range game.Zombies {
+			entities = append(entities, zombie.Entities()...)
+		}
+
 		// reset entities
 		for _, entity := range entities {
 			entity.ResetForces()
@@ -87,6 +96,14 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			player.Update(dt)
 		}
 
+		// update zombies
+		for _, zombie := range game.Zombies {
+			zombie.Update(dt)
+		}
+
+		// update collision info
+		HandleCollisions(entities)
+
 		// integrate forces
 		for _, entity := range entities {
 			entity.IntegrateForces(dt)
@@ -97,7 +114,17 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			player.ApplyConstraints(game.Room.Bounds)
 		}
 
+		// respawn dead zombies
+		for _, zombie := range game.Zombies {
+			zombie.Respawn(game.Room.Bounds)
+		}
+
 		game.Room.Render(game)
+
+		for _, zombie := range game.Zombies {
+			zombie.Render(game)
+		}
+
 		for _, player := range game.Players {
 			player.Render(game)
 		}
