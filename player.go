@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/glfw/v3.1/glfw"
 
 	"github.com/loov/zombieroom/g"
 )
@@ -10,24 +11,22 @@ type Player struct {
 	Controller Controller
 	Updater    ControllerUpdater
 
-	Position g.V2
-	Velocity g.V2
-	Force    g.V2
+	Survivor Entity
+	Hammer   Hammer
+}
 
-	Direction g.V2
+func (player *Player) Entities() []*Entity {
+	xs := []*Entity{}
+	xs = append(xs, player.Survivor.Entities()...)
+	xs = append(xs, player.Hammer.Entities()...)
 
-	Hammer Hammer
+	return xs
 }
 
 type Hammer struct {
-	Position g.V2
-	Velocity g.V2
-	Force    g.V2
-
-	Direction g.V2
+	Entity
 
 	Tension float32
-	Radius  float32
 	Length  float32
 
 	NormalLength      float32
@@ -40,107 +39,105 @@ func NewPlayer(updater ControllerUpdater) *Player {
 	player := &Player{}
 	player.Updater = updater
 
+	player.Survivor.Elasticity = 0.2
+	player.Survivor.Mass = 1.0
+	player.Survivor.Dampening = 0.999
+
+	player.Hammer.Elasticity = 0.4
+
+	player.Hammer.Mass = 0.05
 	player.Hammer.Radius = 0.5
-	player.Hammer.NormalLength = 1.5
-	player.Hammer.MaxLength = 4
+	player.Hammer.NormalLength = 2
+	player.Hammer.MaxLength = 3
 	player.Hammer.TensionMultiplier = 20
+	player.Hammer.Dampening = 0.999
 
 	return player
 }
 
-func (player *Player) AddForces(game *Game, dt float32) {
-	hammer := &player.Hammer
+func (player *Player) UpdateInput(window *glfw.Window) {
+	// update input
+	player.Updater.Update(&player.Controller, window)
+}
 
-	const force = 30
-	const maxspeed = 20
+func (player *Player) Update(dt float32) {
+	const MovementForce = 30
 
-	{ // player force
+	survivor, hammer := &player.Survivor, &player.Hammer
+
+	{ // add survivor movement forces
 		in := player.Controller.Inputs[0]
+
 		if in.Direction.Length() > 0.001 {
-			player.Force = in.Direction.Scale(force)
+			survivor.Force = in.Direction.Scale(MovementForce)
 			// todo scale lateral movement
 
 			lateral := in.Direction.Rotate90c().Normalize()
-			scale := lateral.Dot(player.Velocity)
-			player.Force = player.Force.Add(lateral.Scale(-scale * 2.0))
+			scale := lateral.Dot(survivor.Velocity)
+
+			survivor.AddForce(lateral.Scale(-scale * 4.0))
+
+			hammer.Dampening = 0.999
 		} else {
-			player.Force = player.Velocity.Normalize().Negate().Scale(force)
+			survivor.AddForce(survivor.Velocity.Normalize().Negate().Scale(MovementForce))
+
+			hammer.Dampening = 0.98
 		}
 	}
 
 	{ // hammer forces
-		hammer.Force = g.V2{}
-
-		player.Hammer.Tension = 0
-		d := hammer.Position.Sub(player.Position)
-		length := d.Length()
+		offset := hammer.Position.Sub(survivor.Position)
+		length := offset.Length()
 
 		delta := g.Max(length-hammer.NormalLength, 0)
-		hammer.Tension = delta * hammer.TensionMultiplier
+		//delta := length - hammer.NormalLength
+		tension := delta * hammer.TensionMultiplier
 
-		f := g.V2{
-			d.X * hammer.Tension / (length + 1),
-			d.Y * hammer.Tension / (length + 1),
+		pull := g.V2{
+			offset.X * tension / (length + 1),
+			offset.Y * tension / (length + 1),
 		}
 
-		hammer.Force = hammer.Force.Sub(f)
-		player.Force = player.Force.Add(f)
-
-		dist := hammer.Position.Sub(player.Position)
-		if n := dist.Length(); n > hammer.MaxLength {
-			hammer.Position = player.Position.AddScale(dist, hammer.MaxLength/n)
+		if delta > hammer.MaxLength {
+			survivor.AddForce(pull)
+			survivor.AddForce(pull)
+		} else {
+			hammer.AddForce(pull.Negate())
+			survivor.AddForce(pull)
 		}
 	}
 }
 
-func (player *Player) IntegrateForces(game *Game, dt float32) {
-	hammer := &player.Hammer
+func (player *Player) ApplyConstraints(bounds g.Rect) {
+	survivor, hammer := &player.Survivor, &player.Hammer
 
-	const maxspeed = 20
+	g.EnforceInside(&survivor.Position, &survivor.Velocity, bounds, survivor.Elasticity)
+	g.EnforceInside(&hammer.Position, &hammer.Velocity, bounds, hammer.Elasticity)
 
-	{ // player physics
-		player.Velocity = player.Velocity.AddScale(player.Force, dt)
-		player.Velocity = g.ClampLength(player.Velocity, maxspeed)
-		player.Position = player.Position.AddScale(player.Velocity, dt)
-
-		g.EnforceInside(&player.Position, &player.Velocity, game.Room.Bounds, 0.2)
-
-		dir := player.Position.Sub(hammer.Position)
-		player.Direction = player.Direction.AddScale(dir, 100*dt).Normalize()
+	dist := hammer.Position.Sub(survivor.Position)
+	if n := dist.Length(); n > hammer.MaxLength {
+		hammer.Position = survivor.Position.AddScale(dist, hammer.MaxLength/n)
 	}
-
-	{ // hammer physics
-		hammer.Velocity = hammer.Velocity.AddScale(hammer.Force, dt)
-		hammer.Velocity = g.ClampLength(hammer.Velocity, maxspeed)
-		hammer.Position = hammer.Position.AddScale(hammer.Velocity, dt)
-
-		g.EnforceInside(&hammer.Position, &hammer.Velocity, game.Room.Bounds, 0.3)
-
-		dir := hammer.Position.Sub(player.Position)
-		hammer.Direction = hammer.Direction.AddScale(dir, 100*dt).Normalize()
-	}
-}
-
-func (player *Player) Update(game *Game, dt float32) {
-	player.AddForces(game, dt)
-	player.IntegrateForces(game, dt)
+	/**/
 }
 
 func (player *Player) Render(game *Game) {
-	hammer := &player.Hammer
+	survivor, hammer := &player.Survivor, &player.Hammer
+
 	{
 		rope := game.Assets.TextureRepeat("assets/rope.png")
 		rope.Line(
 			hammer.Position,
-			player.Position,
+			survivor.Position,
 			hammer.Radius/2)
 	}
 
+	rotation := -(survivor.Position.Sub(hammer.Position).Angle() - g.Tau/4)
+
 	gl.PushMatrix()
 	{
-		gl.Translatef(player.Position.X, player.Position.Y, 0)
+		gl.Translatef(survivor.Position.X, survivor.Position.Y, 0)
 
-		rotation := -(player.Direction.Angle() - g.Tau/4)
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/player.png")
@@ -152,7 +149,6 @@ func (player *Player) Render(game *Game) {
 	{
 		gl.Translatef(hammer.Position.X, hammer.Position.Y, 0)
 
-		rotation := -(hammer.Direction.Angle() - g.Tau/4)
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/hammer.png")

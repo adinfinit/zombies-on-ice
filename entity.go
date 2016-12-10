@@ -10,13 +10,12 @@ type Entity struct {
 	Mass       float32
 	Radius     float32
 	Elasticity float32
-
-	Direction g.V2
+	Dampening  float32
 }
 
-func (en *Entity) Entity() *Entity { return en }
+func (en *Entity) Entities() []*Entity { return []*Entity{en} }
 
-func (en *Entity) Reset() {
+func (en *Entity) ResetForces() {
 	en.Force = g.V2{}
 	if en.Mass == 0 {
 		en.Mass = 1.0
@@ -32,6 +31,7 @@ func (en *Entity) IntegrateForces(dt float32) {
 
 	en.Velocity = en.Velocity.AddScale(en.Force, dt/en.Mass)
 	en.Velocity = g.ClampLength(en.Velocity, MaxEntitySpeed)
+	en.Velocity = en.Velocity.Scale(en.Dampening)
 	en.Position = en.Position.AddScale(en.Velocity, dt)
 }
 

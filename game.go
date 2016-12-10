@@ -7,28 +7,10 @@ import (
 	"github.com/loov/zombieroom/g"
 )
 
-type Room struct {
-	Bounds g.Rect
-
-	TextureScale float32
-}
-
-func (room *Room) Render(game *Game) {
-	ground := game.Assets.TextureRepeat("assets/ground.png")
-
-	ground.DrawSub(
-		room.Bounds,
-		g.Rect{
-			g.V2{0, 0},
-			room.Bounds.Size().Scale(room.TextureScale),
-		},
-	)
-}
-
 type Game struct {
 	Assets *Assets
 
-	Room    Room
+	Room    *Room
 	Players []*Player
 
 	Clock float64
@@ -42,9 +24,7 @@ func NewGame() *Game {
 	game.Players = append(game.Players, NewPlayer(&Keyboard_1))
 	game.Players = append(game.Players, NewPlayer(&Keyboard_0))
 
-	game.Room.Bounds.Min = g.V2{-14, -8}
-	game.Room.Bounds.Max = g.V2{14, 8}
-	game.Room.TextureScale = 0.5
+	game.Room = NewRoom()
 
 	return game
 }
@@ -55,9 +35,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 	game.Assets.Reload()
 
-	// SCENE
 	gl.ClearColor(0, 0, 0, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT) // | gl.DEPTH_BUFFER_BIT)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
@@ -90,20 +69,39 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.ALPHA_TEST)
 
-	for _, player := range game.Players {
-		player.Updater.Update(&player.Controller, window)
-	}
+	{
+		// list all entities
+		entities := []*Entity{}
+		for _, player := range game.Players {
+			entities = append(entities, player.Entities()...)
+		}
 
-	for _, player := range game.Players {
-		player.Update(game, dt)
-	}
+		// reset entities
+		for _, entity := range entities {
+			entity.ResetForces()
+		}
 
-	game.Room.Render(game)
-	for _, player := range game.Players {
-		player.Render(game)
-	}
+		// update survivors and hammers
+		for _, player := range game.Players {
+			player.UpdateInput(window)
+			player.Update(dt)
+		}
 
-	RenderAxis()
+		// integrate forces
+		for _, entity := range entities {
+			entity.IntegrateForces(dt)
+		}
+
+		// apply constraints
+		for _, player := range game.Players {
+			player.ApplyConstraints(game.Room.Bounds)
+		}
+
+		game.Room.Render(game)
+		for _, player := range game.Players {
+			player.Render(game)
+		}
+	}
 }
 
 func (game *Game) Unload() {
