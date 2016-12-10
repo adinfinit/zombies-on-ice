@@ -35,7 +35,9 @@ type Room struct {
 }
 
 func (room *Room) Render(game *Game) {
-	game.Assets.Test.DrawSub(
+	ground := game.Assets.TextureRepeat("assets/ground.png")
+
+	ground.DrawSub(
 		room.Bounds,
 		g.Rect{
 			g.V2{0, 0},
@@ -44,16 +46,8 @@ func (room *Room) Render(game *Game) {
 	)
 }
 
-type Assets struct {
-	Player g.Texture
-	Rope   g.Texture
-	Hammer g.Texture
-	Ground g.Texture
-	Test   g.Texture
-}
-
 type Game struct {
-	Assets Assets
+	Assets *Assets
 
 	Player Player
 	Room   Room
@@ -64,19 +58,11 @@ type Game struct {
 func NewGame() *Game {
 	game := &Game{}
 
+	game.Assets = NewAssets()
+
 	game.Room.Bounds.Min = g.V2{-20, -15}
 	game.Room.Bounds.Max = g.V2{20, 15}
 	game.Room.TextureScale = 0.5
-
-	game.Assets.Hammer.Path = "assets/hammer.png"
-	game.Assets.Player.Path = "assets/player.png"
-	game.Assets.Rope.Path = "assets/rope.png"
-
-	game.Assets.Ground.Repeat = true
-	game.Assets.Ground.Path = "assets/ground.png"
-
-	game.Assets.Test.Repeat = true
-	game.Assets.Test.Path = "assets/test.png"
 
 	return game
 }
@@ -85,12 +71,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	// dt := float32(now - game.Clock)
 	game.Clock = now
 
-	game.Assets.Player.Reload()
-	game.Assets.Hammer.Reload()
-	game.Assets.Rope.Reload()
-
-	game.Assets.Ground.Reload()
-	game.Assets.Test.Reload()
+	game.Assets.Reload()
 
 	// SCENE
 	gl.ClearColor(0, 0, 0, 1)
@@ -134,31 +115,5 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 }
 
 func (game *Game) Unload() {
-	game.Assets.Player.Delete()
-	game.Assets.Hammer.Delete()
-	game.Assets.Rope.Delete()
-	game.Assets.Ground.Delete()
-	game.Assets.Test.Delete()
-}
-
-func RenderAxis() {
-	gl.Color4f(1, 0, 0, 1)
-	gl.Begin(gl.QUADS)
-	{
-		gl.Vertex2f(0, 0)
-		gl.Vertex2f(10, 0)
-		gl.Vertex2f(10, 0.1)
-		gl.Vertex2f(0, 0.1)
-	}
-	gl.End()
-
-	gl.Color4f(0, 1, 0, 1)
-	gl.Begin(gl.QUADS)
-	{
-		gl.Vertex2f(0, 0)
-		gl.Vertex2f(0.1, 0)
-		gl.Vertex2f(0.1, 10)
-		gl.Vertex2f(0, 10)
-	}
-	gl.End()
+	game.Assets.Unload()
 }
