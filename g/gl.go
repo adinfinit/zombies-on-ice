@@ -3,7 +3,7 @@ package g
 import (
 	"fmt"
 
-	"github.com/goxjs/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 )
 
 func glerror() error {

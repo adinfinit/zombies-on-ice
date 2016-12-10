@@ -15,7 +15,8 @@ import (
 )
 
 type Texture struct {
-	path    string
+	Path string
+
 	modtime time.Time
 	lasterr error
 
@@ -36,7 +37,7 @@ func (tex *Texture) check(err error) bool {
 }
 
 func (tex *Texture) Reload() {
-	stat, err := os.Stat(filepath.FromSlash(tex.path))
+	stat, err := os.Stat(filepath.FromSlash(tex.Path))
 	if tex.check(err) {
 		return
 	}
@@ -47,19 +48,24 @@ func (tex *Texture) Reload() {
 	}
 	tex.modtime = modtime
 
-	m, err := loadImage(filepath.FromSlash(tex.path))
+	m, err := loadImage(filepath.FromSlash(tex.Path))
 	if tex.check(err) {
 		return
 	}
 
 	tex.lasterr = nil
 	tex.RGBA = m
+
+	tex.Delete()
+	tex.Upload()
 }
 
 func (tex *Texture) Upload() {
+	log.Println("Upload texture", tex.Path)
+
 	gl.Enable(gl.TEXTURE_2D)
-	gl.GenTextures(1, &texture.ID)
-	gl.BindTexture(gl.TEXTURE_2D, texture.ID)
+	gl.GenTextures(1, &tex.ID)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -68,28 +74,24 @@ func (tex *Texture) Upload() {
 		gl.TEXTURE_2D,
 		0,
 		gl.RGBA,
-		int32(texture.RGBA.Rect.Size().X),
-		int32(texture.RGBA.Rect.Size().Y),
+		int32(tex.RGBA.Rect.Size().X),
+		int32(tex.RGBA.Rect.Size().Y),
 		0,
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
-		gl.Ptr(texture.RGBA.Pix))
+		gl.Ptr(tex.RGBA.Pix))
 
 	gl.Disable(gl.TEXTURE_2D)
 
 	tex.check(glerror())
 }
 
-func (tex *Texture) Bind() {
-	gl.Enable(gl.TEXTURE_2D)
-	gl.BindTexture(gl.TEXTURE_2D, texture.ID)
-
-	tex.check(glerror())
-}
-
-func (tex *Texture) Unbind() {
-	gl.Disable(gl.TEXTURE_2D)
-	tex.check(glerror())
+func (tex *Texture) Delete() {
+	if tex.ID == 0 {
+		return
+	}
+	gl.DeleteTextures(1, &tex.ID)
+	tex.ID = 0
 }
 
 func loadImage(filepath string) (*image.RGBA, error) {
@@ -102,6 +104,10 @@ func loadImage(filepath string) (*image.RGBA, error) {
 	m, _, err := image.Decode(file)
 	if err != nil {
 		return nil, err
+	}
+
+	if rgba, ok := m.(*image.RGBA); ok {
+		return rgba, nil
 	}
 
 	rgba := image.NewRGBA(m.Bounds())

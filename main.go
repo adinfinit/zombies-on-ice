@@ -41,17 +41,14 @@ func main() {
 	}
 
 	game := NewGame()
-
-	last := float32(glfw.GetTime())
+	game.Clock = glfw.GetTime()
 	for !window.ShouldClose() {
 		if window.GetKey(glfw.KeyF10) == glfw.Press {
 			game.Unload()
 			game = NewGame()
 		}
 
-		now := float32(glfw.GetTime())
-		game.Update(window, now-last)
-		last = now
+		game.Update(window, glfw.GetTime())
 
 		window.SwapBuffers()
 		glfw.PollEvents()
