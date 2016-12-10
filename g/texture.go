@@ -61,6 +61,56 @@ func (tex *Texture) Reload() {
 	tex.Upload()
 }
 
+func (tex *Texture) Draw(dst Rect) {
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+	{
+		gl.Color4f(1, 1, 1, 1)
+		gl.Begin(gl.QUADS)
+		{
+			gl.TexCoord2f(0, 1)
+			gl.Vertex2f(dst.Min.X, dst.Min.Y)
+
+			gl.TexCoord2f(1, 1)
+			gl.Vertex2f(dst.Max.X, dst.Min.Y)
+
+			gl.TexCoord2f(1, 0)
+			gl.Vertex2f(dst.Max.X, dst.Max.Y)
+
+			gl.TexCoord2f(0, 0)
+			gl.Vertex2f(dst.Min.X, dst.Max.Y)
+		}
+		gl.End()
+	}
+	gl.Disable(gl.TEXTURE_2D)
+}
+
+func (tex *Texture) DrawSub(dst Rect, src Rect) {
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+	{
+		gl.Color4f(1, 1, 1, 1)
+		gl.Begin(gl.QUADS)
+		{
+			gl.TexCoord2f(src.Min.X, src.Max.Y)
+			gl.Vertex2f(dst.Min.X, dst.Min.Y)
+
+			gl.TexCoord2f(src.Max.X, src.Max.Y)
+			gl.Vertex2f(dst.Max.X, dst.Min.Y)
+
+			gl.TexCoord2f(src.Max.X, src.Min.Y)
+			gl.Vertex2f(dst.Max.X, dst.Max.Y)
+
+			gl.TexCoord2f(src.Min.X, src.Min.Y)
+			gl.Vertex2f(dst.Min.X, dst.Max.Y)
+		}
+		gl.End()
+	}
+	gl.Disable(gl.TEXTURE_2D)
+}
+
 func (tex *Texture) Upload() {
 	log.Println("Upload texture", tex.Path)
 

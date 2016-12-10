@@ -28,6 +28,22 @@ type Hammer struct {
 	VelocityDampening float32
 }
 
+type Room struct {
+	Bounds g.Rect
+
+	TextureScale float32
+}
+
+func (room *Room) Render(game *Game) {
+	game.Assets.Test.DrawSub(
+		room.Bounds,
+		g.Rect{
+			g.V2{0, 0},
+			room.Bounds.Size().Scale(room.TextureScale),
+		},
+	)
+}
+
 type Assets struct {
 	Player g.Texture
 	Rope   g.Texture
@@ -38,13 +54,19 @@ type Assets struct {
 
 type Game struct {
 	Assets Assets
+
 	Player Player
+	Room   Room
 
 	Clock float64
 }
 
 func NewGame() *Game {
 	game := &Game{}
+
+	game.Room.Bounds.Min = g.V2{-20, -15}
+	game.Room.Bounds.Max = g.V2{20, 15}
+	game.Room.TextureScale = 0.5
 
 	game.Assets.Hammer.Path = "assets/hammer.png"
 	game.Assets.Player.Path = "assets/player.png"
@@ -106,29 +128,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.ALPHA_TEST)
 
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.Enable(gl.TEXTURE_2D)
-	gl.BindTexture(gl.TEXTURE_2D, game.Assets.Ground.ID)
-	{
-		gl.Color4f(1, 1, 1, 1)
-		gl.Begin(gl.QUADS)
-		{
-			gl.TexCoord2f(0, roomSize.Y/2)
-			gl.Vertex2f(-roomSize.X/2, roomSize.Y/2)
+	game.Room.Render(game)
 
-			gl.TexCoord2f(0, 0)
-			gl.Vertex2f(-roomSize.X/2, -roomSize.Y/2)
-
-			gl.TexCoord2f(roomSize.X/2, 0)
-			gl.Vertex2f(roomSize.X/2, -roomSize.Y/2)
-
-			gl.TexCoord2f(roomSize.X/2, roomSize.Y/2)
-			gl.Vertex2f(roomSize.X/2, roomSize.Y/2)
-		}
-		gl.End()
-	}
-
-	gl.Disable(gl.TEXTURE_2D)
+	RenderAxis()
 }
 
 func (game *Game) Unload() {
@@ -137,4 +139,26 @@ func (game *Game) Unload() {
 	game.Assets.Rope.Delete()
 	game.Assets.Ground.Delete()
 	game.Assets.Test.Delete()
+}
+
+func RenderAxis() {
+	gl.Color4f(1, 0, 0, 1)
+	gl.Begin(gl.QUADS)
+	{
+		gl.Vertex2f(0, 0)
+		gl.Vertex2f(10, 0)
+		gl.Vertex2f(10, 0.1)
+		gl.Vertex2f(0, 0.1)
+	}
+	gl.End()
+
+	gl.Color4f(0, 1, 0, 1)
+	gl.Begin(gl.QUADS)
+	{
+		gl.Vertex2f(0, 0)
+		gl.Vertex2f(0.1, 0)
+		gl.Vertex2f(0.1, 10)
+		gl.Vertex2f(0, 10)
+	}
+	gl.End()
 }

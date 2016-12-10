@@ -2,6 +2,12 @@ package g
 
 var Zero2 = V2{}
 
+type Rect struct{ Min, Max V2 }
+
+func (r Rect) Size() V2 {
+	return r.Max.Sub(r.Min)
+}
+
 type V2 struct{ X, Y float32 }
 
 // Add adds two vectors and returns the result
