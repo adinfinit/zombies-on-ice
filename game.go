@@ -7,6 +7,13 @@ import (
 	"github.com/loov/zombieroom/g"
 )
 
+const (
+	ZeroLayer = CollisionLayer(1 << iota)
+	PlayerLayer
+	HammerLayer
+	ZombieLayer
+)
+
 type Game struct {
 	Assets *Assets
 

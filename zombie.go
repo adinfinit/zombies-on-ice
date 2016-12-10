@@ -19,6 +19,9 @@ func NewZombie(bounds g.Rect) *Zombie {
 	zombie.Dampening = 0.999
 	zombie.Radius = 0.5
 
+	zombie.CollisionLayer = ZombieLayer
+	zombie.CollisionMask = HammerLayer
+
 	return zombie
 }
 

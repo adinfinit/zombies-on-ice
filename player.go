@@ -44,6 +44,9 @@ func NewPlayer(updater ControllerUpdater) *Player {
 	player.Survivor.Elasticity = 0.2
 	player.Survivor.Dampening = 0.999
 
+	player.Survivor.CollisionLayer = PlayerLayer
+	player.Survivor.CollisionMask = HammerLayer
+
 	player.Hammer.Mass = 0.05
 	player.Hammer.Elasticity = 0.4
 	player.Hammer.Radius = 0.4
@@ -52,6 +55,9 @@ func NewPlayer(updater ControllerUpdater) *Player {
 	player.Hammer.MaxLength = 3
 	player.Hammer.TensionMultiplier = 20
 	player.Hammer.Dampening = 0.999
+
+	player.Hammer.CollisionLayer = HammerLayer
+	player.Hammer.CollisionMask = 0
 
 	return player
 }

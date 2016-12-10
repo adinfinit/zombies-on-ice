@@ -7,6 +7,8 @@ type Collision struct {
 	Normal g.V2
 }
 
+type CollisionLayer uint8
+
 type Entity struct {
 	Position g.V2
 	Velocity g.V2
@@ -18,6 +20,9 @@ type Entity struct {
 	Dampening  float32
 
 	Collision []Collision
+
+	CollisionLayer CollisionLayer
+	CollisionMask  CollisionLayer
 }
 
 func (en *Entity) Entities() []*Entity { return []*Entity{en} }
@@ -53,19 +58,27 @@ func HandleCollisions(entities []*Entity) {
 
 	for i, a := range entities {
 		for _, b := range entities[i+1:] {
+			if a.CollisionLayer&b.CollisionMask == 0 && b.CollisionLayer&a.CollisionMask == 0 {
+				continue
+			}
+
 			dist := a.Position.Sub(b.Position)
 			if dist.Length() < (a.Radius+b.Radius)*SafeZone {
-				a.Collision = append(a.Collision, Collision{
-					A:      a,
-					B:      b,
-					Normal: g.V2{},
-				})
+				if a.CollisionMask&b.CollisionLayer != 0 {
+					a.Collision = append(a.Collision, Collision{
+						A:      a,
+						B:      b,
+						Normal: g.V2{},
+					})
+				}
 
-				b.Collision = append(b.Collision, Collision{
-					A:      b,
-					B:      a,
-					Normal: g.V2{},
-				})
+				if b.CollisionMask&a.CollisionLayer != 0 {
+					b.Collision = append(b.Collision, Collision{
+						A:      b,
+						B:      a,
+						Normal: g.V2{},
+					})
+				}
 			}
 		}
 	}
