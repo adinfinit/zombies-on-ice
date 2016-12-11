@@ -3,9 +3,9 @@ package main
 import "github.com/loov/zombieroom/g"
 
 type Collision struct {
-	A, B   *Entity
-	Normal g.V2
-	Force  g.V2
+	A, B          *Entity
+	Normal        g.V2
+	VelocityDelta g.V2
 }
 
 type CollisionLayer uint8
@@ -89,19 +89,22 @@ func HandleCollisions(entities []*Entity, dt float32) {
 				b.AddForce(normal.Scale(p * b.Mass / dt))
 			}
 
+			velocityDelta := a.Velocity.Sub(b.Velocity)
 			if a.CollisionMask&b.CollisionLayer != 0 {
 				a.Collision = append(a.Collision, Collision{
-					A:      a,
-					B:      b,
-					Normal: normal,
+					A:             a,
+					B:             b,
+					Normal:        normal,
+					VelocityDelta: velocityDelta,
 				})
 			}
 
 			if b.CollisionMask&a.CollisionLayer != 0 {
 				b.Collision = append(b.Collision, Collision{
-					A:      b,
-					B:      a,
-					Normal: normal.Negate(),
+					A:             b,
+					B:             a,
+					Normal:        normal.Negate(),
+					VelocityDelta: velocityDelta.Negate(),
 				})
 			}
 		}

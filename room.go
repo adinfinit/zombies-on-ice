@@ -19,13 +19,18 @@ func NewRoom() *Room {
 }
 
 func (room *Room) Render(game *Game) {
-	ground := game.Assets.TextureRepeat("assets/ground.png")
+	if false {
+		ground := game.Assets.TextureRepeat("assets/ground.png")
 
-	ground.DrawSub(
-		room.Bounds,
-		g.Rect{
-			g.V2{0, 0},
-			room.Bounds.Size().Scale(room.TextureScale),
-		},
-	)
+		ground.DrawSub(
+			room.Bounds,
+			g.Rect{
+				g.V2{0, 0},
+				room.Bounds.Size().Scale(room.TextureScale),
+			},
+		)
+	} else {
+		ground := game.Assets.Texture("assets/room.png")
+		ground.Draw(room.Bounds)
+	}
 }

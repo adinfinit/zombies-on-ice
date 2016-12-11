@@ -10,11 +10,12 @@ type Particles struct {
 }
 
 type Particle struct {
-	Position g.V2
-	Velocity g.V2
-	Rotation float32
-	Radius   float32
-	Life     float32
+	Position        g.V2
+	Velocity        g.V2
+	Rotation        float32
+	AngularVelocity float32
+	Radius          float32
+	Life            float32
 }
 
 func NewParticles() *Particles { return &Particles{} }
@@ -24,11 +25,12 @@ func (ps *Particles) Spawn(amount int, position g.V2, velocity g.V2, radius floa
 		rotate := g.RandomBetween(-spread/2, spread/2)
 		speed := g.RandomBetween(-spread, spread)
 		ps.List = append(ps.List, &Particle{
-			Position: position,
-			Velocity: velocity.Rotate(rotate).Scale(1 + speed),
-			Rotation: g.RandomBetween(0, 7),
-			Radius:   g.RandomBetween(radius, radius*2),
-			Life:     1,
+			Position:        position,
+			Velocity:        velocity.Rotate(rotate).Scale(1 + speed),
+			Rotation:        g.RandomBetween(0, 7),
+			AngularVelocity: g.RandomBetween(-spread, spread),
+			Radius:          g.RandomBetween(radius, radius*2),
+			Life:            1,
 		})
 	}
 }
@@ -39,6 +41,7 @@ func (ps *Particles) Update(dt float32) {
 		p.Velocity = p.Velocity.Scale(g.Pow(0.9, dt))
 		p.Life -= dt
 		p.Radius -= dt * 0.2
+		p.Rotation += p.AngularVelocity
 	}
 }
 

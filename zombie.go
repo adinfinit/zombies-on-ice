@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math/rand"
+
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/loov/zombieroom/g"
 )
@@ -9,12 +11,14 @@ type Zombie struct {
 	Entity
 
 	Direction g.V2
+	Distance  float32
+	Frame     int
 }
 
 func NewZombie(bounds g.Rect) *Zombie {
 	zombie := &Zombie{}
 
-	zombie.Position = g.RandomV2(bounds)
+	zombie.Respawn(bounds)
 
 	zombie.Elasticity = 0.2
 	zombie.Mass = 0.5
@@ -51,8 +55,28 @@ func (zombie *Zombie) Update(game *Game, dt float32) {
 	scale := lateral.Dot(zombie.Velocity)
 
 	zombie.AddForce(lateral.Scale(-scale * 2.0))
-
 	zombie.Direction = direction.Add(zombie.Velocity.Normalize()).Scale(0.5)
+
+	zombie.Distance += zombie.Velocity.Scale(dt).Length()
+	if zombie.Distance > 0.1 {
+		zombie.Distance -= 0.1
+		zombie.Frame += 1
+	}
+}
+
+func (zombie *Zombie) respawn(bounds g.Rect) {
+	zombie.Position = g.RandomV2(bounds)
+	switch rand.Intn(4) {
+	case 0:
+		zombie.Position.X = bounds.Min.X
+	case 1:
+		zombie.Position.X = bounds.Max.X
+	case 2:
+		zombie.Position.Y = bounds.Min.Y
+	case 3:
+		zombie.Position.Y = bounds.Max.Y
+	}
+	zombie.Velocity = g.V2{}
 }
 
 func (zombie *Zombie) Respawn(bounds g.Rect) {
@@ -60,8 +84,7 @@ func (zombie *Zombie) Respawn(bounds g.Rect) {
 		return
 	}
 
-	zombie.Position = g.RandomV2(bounds)
-	zombie.Velocity = g.V2{}
+	zombie.respawn(bounds)
 }
 
 func (zombie *Zombie) Render(game *Game) {
@@ -72,7 +95,16 @@ func (zombie *Zombie) Render(game *Game) {
 		rotation := -(zombie.Direction.Angle() + g.Tau/4)
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
-		tex := game.Assets.TextureRepeat("assets/zombie.png")
+		var tex *g.Texture
+		if zombie.Velocity.Length() < 0.1 {
+			tex = game.Assets.TextureRepeat("assets/zombie-idle.png")
+		} else {
+			if zombie.Frame&1 == 0 {
+				tex = game.Assets.TextureRepeat("assets/zombie-walk-0.png")
+			} else {
+				tex = game.Assets.TextureRepeat("assets/zombie-walk-1.png")
+			}
+		}
 		tex.Draw(g.NewCircleRect(zombie.Radius))
 	}
 	gl.PopMatrix()

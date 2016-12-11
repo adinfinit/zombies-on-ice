@@ -105,8 +105,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		amount := float32(0.0)
 		for _, zombie := range game.Zombies {
 			for _, collision := range zombie.Collision {
-				amount += collision.Force.Length()
-
+				amount += collision.VelocityDelta.Length()
 				game.Particles.Spawn(16, collision.A.Position, collision.B.Velocity, 0.1, 0.4)
 			}
 		}
@@ -173,9 +172,10 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 	gl.Translatef(g.RandomV2Circle(game.CameraShake).XYZ())
 
+	gl.Enable(gl.MULTISAMPLE)
+
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.ALPHA_TEST)
 
 	{
