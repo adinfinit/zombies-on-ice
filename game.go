@@ -184,7 +184,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		// kill particles
 		game.Particles.Kill(game.Room.Bounds)
 	}
+}
 
+func (game *Game) Render(window *glfw.Window) {
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.MODELVIEW)
@@ -222,30 +224,29 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Enable(gl.ALPHA_TEST)
 
-	{
-		game.Room.Render(game)
+	// actual rendering
+	game.Room.Render(game)
 
-		game.Particles.RenderDecals(game)
+	game.Particles.RenderDecals(game)
 
-		for _, zombie := range game.Zombies {
-			zombie.Render(game)
-		}
+	for _, zombie := range game.Zombies {
+		zombie.Render(game)
+	}
 
-		for _, player := range game.Players {
-			player.Render(game)
-		}
+	for _, player := range game.Players {
+		player.Render(game)
+	}
 
-		game.Particles.Render(game)
+	game.Particles.Render(game)
 
-		zero := g.V2{
-			-screenSize.X/2 + 1,
-			screenSize.Y/2 - 2,
-		}
+	zero := g.V2{
+		-screenSize.X/2 + 1,
+		screenSize.Y/2 - 2,
+	}
 
-		for _, player := range game.Players {
-			game.Font.DrawColored(fmt.Sprintf("%v", player.Points), zero, 1, player.Color)
-			zero.Y -= 0.7
-		}
+	for _, player := range game.Players {
+		game.Font.DrawColored(fmt.Sprintf("%v", player.Points), zero, 1, player.Color)
+		zero.Y -= 0.7
 	}
 }
 

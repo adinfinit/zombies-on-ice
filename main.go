@@ -49,6 +49,7 @@ func main() {
 		}
 
 		game.Update(window, glfw.GetTime())
+		game.Render(window)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
