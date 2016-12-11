@@ -56,6 +56,9 @@ func (tex *Texture) Reload() {
 
 	tex.lasterr = nil
 	tex.RGBA = m
+	sz := m.Bounds().Size()
+	tex.Size.X = float32(sz.X)
+	tex.Size.Y = float32(sz.Y)
 
 	tex.Delete()
 	tex.Upload()

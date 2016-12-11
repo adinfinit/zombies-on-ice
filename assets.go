@@ -18,7 +18,17 @@ func (assets *Assets) Reload() {
 	}
 }
 
-func (assets *Assets) Texture(path string) *g.Texture       { return assets.texture(path, false) }
+func (assets *Assets) Texture(path string) *g.Texture { return assets.texture(path, false) }
+
+func (assets *Assets) SpriteFont(path string, glyphSize g.V2, glyphs string) *g.Font {
+	tex := assets.Texture(path)
+
+	return &g.Font{
+		Texture:   tex,
+		Glyphs:    glyphs,
+		GlyphSize: glyphSize,
+	}
+}
 func (assets *Assets) TextureRepeat(path string) *g.Texture { return assets.texture(path, true) }
 
 func (assets *Assets) texture(path string, repeat bool) *g.Texture {

@@ -14,6 +14,26 @@ func NewCircleRect(r float32) Rect {
 }
 
 func (r Rect) Size() V2 { return r.Max.Sub(r.Min) }
+
+func (r Rect) Offset(delta V2) Rect {
+	return Rect{
+		r.Min.Add(delta),
+		r.Max.Add(delta),
+	}
+}
+func (r Rect) ScaleInv(v V2) Rect {
+	return Rect{
+		V2{
+			r.Min.X / v.X,
+			r.Min.Y / v.Y,
+		},
+		V2{
+			r.Max.X / v.X,
+			r.Max.Y / v.Y,
+		},
+	}
+}
+
 func (r Rect) Contains(p V2) bool {
 	return (r.Min.X <= p.X) && (p.X <= r.Max.X) &&
 		(r.Min.Y <= p.Y) && (p.Y <= r.Max.Y)

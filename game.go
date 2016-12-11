@@ -14,9 +14,11 @@ const (
 	ZombieLayer
 )
 
-type Game struct {
-	Assets *Assets
+// ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#"'&()[]|`\/@°+=*$£€<>%
 
+type Game struct {
+	Assets      *Assets
+	Font        *g.Font
 	Controllers *Controllers
 
 	Room      *Room
@@ -35,6 +37,10 @@ func NewGame() *Game {
 	game := &Game{}
 
 	game.Assets = NewAssets()
+	game.Font = game.Assets.SpriteFont(
+		"assets/arcade_43x74.png",
+		g.V2{43, 74},
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#\"'&()[]|`\\/@°+=*$£€<>%")
 
 	game.Controllers = NewControllers()
 	game.Room = NewRoom()
@@ -222,6 +228,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		}
 
 		game.Particles.Render(game)
+
+		game.Font.Draw("Hello World", g.V2{0, 0}, 1)
 	}
 }
 
