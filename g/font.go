@@ -9,6 +9,11 @@ type Font struct {
 	GlyphSize    V2
 }
 
+func (font *Font) Width(text string, glyphHeight float32) float32 {
+	glyphWidth := glyphHeight * font.GlyphSize.X / font.GlyphSize.Y
+	return glyphWidth * float32(len(text))
+}
+
 func (font *Font) Draw(text string, position V2, glyphHeight float32) {
 	if font.GlyphsPerRow == 0 {
 		font.GlyphsPerRow = int(font.Texture.Size.X / font.GlyphSize.X)

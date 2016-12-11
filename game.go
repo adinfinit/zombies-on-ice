@@ -22,6 +22,8 @@ type Game struct {
 	Font        *g.Font
 	Controllers *Controllers
 
+	Spawner *Spawner
+
 	Room      *Room
 	Players   []*Player
 	Zombies   []*Zombie
@@ -48,13 +50,15 @@ func NewGame() *Game {
 	game.Room = NewRoom()
 	game.Particles = NewParticles()
 
-	for i := 0; i < 20; i++ {
-		game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
-	}
-
-	for i := 0; i < 10; i++ {
-		game.Powerups = append(game.Powerups, NewPowerup(game.Room.Bounds))
-	}
+	game.Spawner = NewSpawner()
+	/*
+		for i := 0; i < 20; i++ {
+			game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
+		}
+		for i := 0; i < 10; i++ {
+			game.Powerups = append(game.Powerups, NewPowerup(game.Room.Bounds))
+		}
+	*/
 
 	return game
 }
@@ -86,6 +90,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		game.Players = active
 	}
+
+	game.Spawner.Update(game, dt)
 
 	{
 		// list all entities
@@ -203,10 +209,14 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			}
 		}
 
-		// respawn dead zombies
+		// remove dead zombies
+		zombies := []*Zombie{}
 		for _, zombie := range game.Zombies {
-			zombie.Respawn(game.Room.Bounds)
+			if _, dead := zombie.DeathStrength(); !dead {
+				zombies = append(zombies, zombie)
+			}
 		}
+		game.Zombies = zombies
 
 		// kill particles
 		game.Particles.Kill(game.Room.Bounds)
@@ -279,6 +289,8 @@ func (game *Game) Render(window *glfw.Window) {
 		game.Font.DrawColored(fmt.Sprintf("%v", player.Points), zero, 1, player.Color)
 		zero.Y -= 0.7
 	}
+
+	game.Spawner.Render(game)
 }
 
 func (game *Game) Unload() {

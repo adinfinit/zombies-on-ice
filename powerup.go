@@ -28,7 +28,7 @@ func NewPowerup(bounds g.Rect) *Powerup {
 	powerup.Life = 10.0
 
 	powerup.Health = 0.5
-	powerup.HammerRadius = 0.1
+	powerup.HammerRadius = 0.2
 
 	return powerup
 }
