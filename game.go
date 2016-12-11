@@ -95,7 +95,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		// update zombies
 		for _, zombie := range game.Zombies {
-			zombie.Update(dt)
+			zombie.Update(game, dt)
 		}
 
 		// update collision info

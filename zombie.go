@@ -25,7 +25,22 @@ func NewZombie(bounds g.Rect) *Zombie {
 	return zombie
 }
 
-func (zombie *Zombie) Update(dt float32) {
+func (zombie *Zombie) Update(game *Game, dt float32) {
+	var nearest *Entity
+	mindist := float32(1000000.0)
+	for _, player := range game.Players {
+		dist := player.Survivor.Position.Sub(zombie.Position).Length()
+		if dist < mindist {
+			nearest = &player.Survivor
+			mindist = dist
+		}
+	}
+
+	if nearest == nil {
+		return
+	}
+
+	zombie.Velocity = nearest.Position.Sub(zombie.Position).Normalize().Scale(0.5)
 }
 
 func (zombie *Zombie) Respawn(bounds g.Rect) {
