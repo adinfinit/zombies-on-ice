@@ -17,8 +17,8 @@ func NewZombie(bounds g.Rect) *Zombie {
 	zombie.Position = g.RandomV2(bounds)
 
 	zombie.Elasticity = 0.2
-	zombie.Mass = 1.0
-	zombie.Dampening = 0.999
+	zombie.Mass = 0.5
+	zombie.Dampening = 0.9
 	zombie.Radius = 0.5
 
 	zombie.Direction = g.V2{}
@@ -44,9 +44,15 @@ func (zombie *Zombie) Update(game *Game, dt float32) {
 		return
 	}
 
-	target := nearest.Position.Sub(zombie.Position).Normalize().Scale(g.Pow(0.5, dt))
-	zombie.Velocity = zombie.Velocity.Add(target).Normalize().Scale(0.5)
-	zombie.Direction = zombie.Direction.Add(zombie.Velocity.Scale(g.Pow(0.5, dt))).Normalize()
+	direction := nearest.Position.Sub(zombie.Position).Normalize()
+	zombie.AddForce(direction.Scale(1))
+
+	lateral := direction.Rotate90c().Normalize()
+	scale := lateral.Dot(zombie.Velocity)
+
+	zombie.AddForce(lateral.Scale(-scale * 2.0))
+
+	zombie.Direction = direction.Add(zombie.Velocity.Normalize()).Scale(0.5)
 }
 
 func (zombie *Zombie) Respawn(bounds g.Rect) {
@@ -55,6 +61,7 @@ func (zombie *Zombie) Respawn(bounds g.Rect) {
 	}
 
 	zombie.Position = g.RandomV2(bounds)
+	zombie.Velocity = g.V2{}
 }
 
 func (zombie *Zombie) Render(game *Game) {
@@ -62,7 +69,7 @@ func (zombie *Zombie) Render(game *Game) {
 	{
 		gl.Translatef(zombie.Position.X, zombie.Position.Y, 0)
 
-		rotation := -(zombie.Velocity.Angle() + g.Tau/4)
+		rotation := -(zombie.Direction.Angle() + g.Tau/4)
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/zombie.png")

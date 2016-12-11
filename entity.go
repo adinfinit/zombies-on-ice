@@ -22,8 +22,9 @@ type Entity struct {
 
 	Collision []Collision
 
-	CollisionLayer CollisionLayer
-	CollisionMask  CollisionLayer
+	CollisionTrigger bool
+	CollisionLayer   CollisionLayer
+	CollisionMask    CollisionLayer
 }
 
 func (en *Entity) Entities() []*Entity { return []*Entity{en} }
@@ -54,37 +55,54 @@ func (en *Entity) ConstrainInside(rect g.Rect) {
 	g.EnforceInside(&en.Position, &en.Velocity, rect, en.Elasticity)
 }
 
-func HandleCollisions(entities []*Entity) {
-	const SafeZone = 0.9
+func HandleCollisions(entities []*Entity, dt float32) {
+	const SafeZone = 0.75
 
 	for i, a := range entities {
 		for _, b := range entities[i+1:] {
-			if a.CollisionLayer&b.CollisionMask == 0 && b.CollisionLayer&a.CollisionMask == 0 {
+			delta := a.Position.Sub(b.Position)
+			if delta.Length() >= (a.Radius+b.Radius)*SafeZone {
 				continue
 			}
 
-			dist := a.Position.Sub(b.Position)
-			if dist.Length() < (a.Radius+b.Radius)*SafeZone {
-				norm := dist.Normalize()
-				force := a.Velocity.Sub(b.Velocity)
+			penetration := delta.Normalize().Scale((a.Radius+b.Radius)*SafeZone - delta.Length())
 
-				if a.CollisionMask&b.CollisionLayer != 0 {
-					a.Collision = append(a.Collision, Collision{
-						A:      a,
-						B:      b,
-						Normal: norm,
-						Force:  force,
-					})
-				}
+			// relative size
+			ra := a.Mass / (a.Mass + b.Mass)
+			rb := b.Mass / (a.Mass + b.Mass)
 
-				if b.CollisionMask&a.CollisionLayer != 0 {
-					b.Collision = append(b.Collision, Collision{
-						A:      b,
-						B:      a,
-						Normal: norm.Negate(),
-						Force:  force.Negate(),
-					})
-				}
+			if !a.CollisionTrigger {
+				a.Position = a.Position.Add(penetration.Scale(rb))
+			}
+			if !b.CollisionTrigger {
+				b.Position = b.Position.Sub(penetration.Scale(ra))
+			}
+
+			normal := delta.Normalize()
+			p := 2.0 * (a.Velocity.Dot(normal) - b.Velocity.Dot(normal)) / (a.Mass + b.Mass)
+
+			if !a.CollisionTrigger {
+				a.AddForce(normal.Scale(-p * a.Mass / dt))
+			}
+
+			if !b.CollisionTrigger {
+				b.AddForce(normal.Scale(p * b.Mass / dt))
+			}
+
+			if a.CollisionMask&b.CollisionLayer != 0 {
+				a.Collision = append(a.Collision, Collision{
+					A:      a,
+					B:      b,
+					Normal: normal,
+				})
+			}
+
+			if b.CollisionMask&a.CollisionLayer != 0 {
+				b.Collision = append(b.Collision, Collision{
+					A:      b,
+					B:      a,
+					Normal: normal.Negate(),
+				})
 			}
 		}
 	}

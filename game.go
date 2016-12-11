@@ -99,7 +99,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		}
 
 		// update collision info
-		HandleCollisions(entities)
+		HandleCollisions(entities, dt)
 
 		// update camera shake
 		amount := float32(0.0)
@@ -116,6 +116,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		if game.CameraShake < 0 {
 			game.CameraShake = 0
 		}
+		if game.CameraShake > 0.5 {
+			game.CameraShake = 0.5
+		}
 
 		// integrate forces
 		for _, entity := range entities {
@@ -131,7 +134,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		}
 
 		// respawn dead zombies
-		for _, zombie := range game.Zombies[:0] {
+		for _, zombie := range game.Zombies {
 			zombie.Respawn(game.Room.Bounds)
 		}
 
