@@ -5,7 +5,22 @@ import (
 	"github.com/loov/zombieroom/g"
 )
 
-type Input struct {
+type Controller struct {
+	ID int
+
+	Connected bool
+	Sticky    bool
+	Updater   ControllerUpdater
+
+	DPad        DPad
+	Start, Back bool
+	A, B, X, Y  bool
+
+	Left  Analog
+	Right Analog
+}
+
+type Analog struct {
 	Direction g.V2
 	Hold      bool
 	Trigger   bool
@@ -38,30 +53,6 @@ func (dpad DPad) Direction() (r g.V2) {
 	return
 }
 
-type Controller struct {
-	ID int
-
-	Connected bool
-	Sticky    bool
-	Updater   ControllerUpdater
-
-	DPad        DPad
-	Start, Back bool
-	A, B, X, Y  bool
-
-	Inputs []Input
-}
-
-type Controllers []*Controller
-
-func (controllers Controllers) Merged() *Controller {
-	all := &Controller{}
-	for _, controller := range controllers {
-		all.Merge(controller)
-	}
-	return all
-}
-
 func (a *Controller) Merge(b *Controller) {
 	if !b.Connected {
 		return
@@ -88,26 +79,6 @@ func (a *Controller) Active() bool {
 		a.Start || a.A || a.B || a.X || a.Y
 }
 
-func (controllers Controllers) Update(window *glfw.Window) {
-	for _, controller := range controllers {
-		wasActive := controller.Active()
-		controller.Updater.Update(controller, window)
-		controller.Sticky = wasActive
-	}
-}
-
-func (controllers Controllers) FindInput(id, input int) Input {
-	for _, controller := range controllers {
-		if controller.ID == id {
-			if input < len(controller.Inputs) {
-				return controller.Inputs[input]
-			}
-			break
-		}
-	}
-	return Input{}
-}
-
 type Keyboard struct {
 	Connected bool
 
@@ -130,12 +101,10 @@ func (key *Keyboard) Update(input *Controller, window *glfw.Window) {
 	input.X = window.GetKey(key.X) == glfw.Press
 	input.Y = window.GetKey(key.Y) == glfw.Press
 
-	input.Inputs = []Input{
-		{
-			Direction: input.DPad.Direction(),
-			Hold:      input.A,
-			Trigger:   input.B,
-		},
+	input.Left = Analog{
+		Direction: input.DPad.Direction(),
+		Hold:      input.A,
+		Trigger:   input.B,
 	}
 
 	if input.Active() {
@@ -156,7 +125,6 @@ type Gamepad struct {
 func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 	// clear state
 	*input = Controller{ID: input.ID, Updater: input.Updater}
-	input.Inputs = []Input{{}, {}}
 
 	axes := glfw.GetJoystickAxes(gamepad.Id)
 	buttons := glfw.GetJoystickButtons(gamepad.Id)
@@ -179,50 +147,17 @@ func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 	input.Back = buttons[6] == 1
 	input.Start = buttons[7] == 1
 
-	// controls for diciple 0
-	input.Inputs[0].Direction = g.V2{ // left thumb
+	input.Left.Direction = g.V2{ // left thumb
 		X: g.ApplyDeadZone(axes[0], gamepad.DeadZone),
 		Y: -g.ApplyDeadZone(axes[1], gamepad.DeadZone),
 	}
-	input.Inputs[0].Hold = buttons[8] == 1    // left thumb pressed
-	input.Inputs[0].Trigger = buttons[4] == 1 // left trigger
+	input.Left.Hold = buttons[8] == 1    // left thumb pressed
+	input.Left.Trigger = buttons[4] == 1 // left trigger
 
-	// controls for diciple 1
-	input.Inputs[1].Direction = g.V2{ // right thumb
+	input.Right.Direction = g.V2{ // right thumb
 		X: g.ApplyDeadZone(axes[4], gamepad.DeadZone),
 		Y: -g.ApplyDeadZone(axes[3], gamepad.DeadZone),
 	}
-	input.Inputs[1].Hold = buttons[9] == 1    // right thumb pressed
-	input.Inputs[1].Trigger = buttons[5] == 1 // right trigger
+	input.Right.Hold = buttons[9] == 1    // right thumb pressed
+	input.Right.Trigger = buttons[5] == 1 // right trigger
 }
-
-var (
-	Keyboard_0 = Keyboard{
-		Up:    glfw.KeyUp,
-		Down:  glfw.KeyDown,
-		Left:  glfw.KeyLeft,
-		Right: glfw.KeyRight,
-
-		Start: glfw.KeyEnter,
-		Back:  glfw.KeyI,
-
-		A: glfw.KeyO,
-		B: glfw.KeyP,
-	}
-
-	Keyboard_1 = Keyboard{
-		Up:    glfw.KeyW,
-		Down:  glfw.KeyS,
-		Left:  glfw.KeyA,
-		Right: glfw.KeyD,
-
-		Start: glfw.KeyEnter,
-		Back:  glfw.KeyR,
-
-		A: glfw.KeyTab,
-		B: glfw.KeyQ,
-	}
-
-	Gamepad_0 = Gamepad{glfw.Joystick1, 0.05}
-	Gamepad_1 = Gamepad{glfw.Joystick2, 0.05}
-)

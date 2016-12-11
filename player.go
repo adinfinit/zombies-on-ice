@@ -2,17 +2,14 @@ package main
 
 import (
 	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/go-gl/glfw/v3.1/glfw"
 
 	"github.com/loov/zombieroom/g"
 )
 
 type Player struct {
 	Controller Controller
-	Updater    ControllerUpdater
-
-	Survivor Entity
-	Hammer   Hammer
+	Survivor   Entity
+	Hammer     Hammer
 }
 
 func (player *Player) Entities() []*Entity {
@@ -35,9 +32,8 @@ type Hammer struct {
 	VelocityDampening float32
 }
 
-func NewPlayer(updater ControllerUpdater) *Player {
+func NewPlayer() *Player {
 	player := &Player{}
-	player.Updater = updater
 
 	player.Survivor.Radius = 0.5
 	player.Survivor.Mass = 1.0
@@ -62,18 +58,13 @@ func NewPlayer(updater ControllerUpdater) *Player {
 	return player
 }
 
-func (player *Player) UpdateInput(window *glfw.Window) {
-	// update input
-	player.Updater.Update(&player.Controller, window)
-}
-
 func (player *Player) Update(dt float32) {
 	const MovementForce = 30
 
 	survivor, hammer := &player.Survivor, &player.Hammer
 
 	{ // add survivor movement forces
-		in := player.Controller.Inputs[0]
+		in := player.Controller.Left
 
 		if in.Direction.Length() > 0.001 {
 			survivor.Force = in.Direction.Scale(MovementForce)

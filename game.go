@@ -17,6 +17,8 @@ const (
 type Game struct {
 	Assets *Assets
 
+	Controllers *Controllers
+
 	Room      *Room
 	Players   []*Player
 	Zombies   []*Zombie
@@ -32,11 +34,8 @@ func NewGame() *Game {
 
 	game.Assets = NewAssets()
 
+	game.Controllers = NewControllers()
 	game.Room = NewRoom()
-
-	game.Players = append(game.Players, NewPlayer(&Keyboard_1))
-	game.Players = append(game.Players, NewPlayer(&Keyboard_0))
-
 	game.Particles = NewParticles()
 
 	for i := 0; i < 10; i++ {
@@ -47,10 +46,32 @@ func NewGame() *Game {
 }
 
 func (game *Game) Update(window *glfw.Window, now float64) {
+	game.Assets.Reload()
+
 	dt := float32(now - game.Clock)
 	game.Clock = now
 
-	game.Assets.Reload()
+	{ // update inputs
+		game.Controllers.Update(window)
+
+		active := []*Player{}
+		for _, player := range game.Players {
+			if !game.Controllers.Removed[&player.Controller] {
+				active = append(active, player)
+			}
+		}
+
+		for _, plugged := range game.Controllers.Plugged {
+			if plugged.Controller == nil {
+				player := NewPlayer()
+				plugged.Controller = &player.Controller
+				active = append(active, player)
+			}
+		}
+
+		game.Players = active
+	}
+
 	{
 		// list all entities
 		entities := []*Entity{}
@@ -69,7 +90,6 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		// update survivors and hammers
 		for _, player := range game.Players {
-			player.UpdateInput(window)
 			player.Update(dt)
 		}
 
