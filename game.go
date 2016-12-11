@@ -107,9 +107,12 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		// update camera shake
 		amount := float32(0.0)
 		for _, zombie := range game.Zombies {
-			for _, collision := range zombie.Collision {
-				amount += collision.VelocityDelta.Length()
-				game.Particles.Spawn(32, collision.A.Position, collision.B.Velocity, 0.1, 0.4)
+			if strength, dead := zombie.DeathStrength(); dead {
+				amount += strength
+				for _, collision := range zombie.Collision {
+					game.Particles.Spawn(32,
+						collision.A.Position, collision.B.Velocity, 0.1, 0.4)
+				}
 			}
 		}
 		game.CameraShake += amount * 0.05

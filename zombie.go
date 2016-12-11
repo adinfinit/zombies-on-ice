@@ -79,12 +79,23 @@ func (zombie *Zombie) respawn(bounds g.Rect) {
 	zombie.Velocity = g.V2{}
 }
 
-func (zombie *Zombie) Respawn(bounds g.Rect) {
+func (zombie *Zombie) DeathStrength() (float32, bool) {
 	if len(zombie.Collision) == 0 {
-		return
+		return 0, false
 	}
 
-	zombie.respawn(bounds)
+	total := float32(0.0)
+	for _, collision := range zombie.Collision {
+		total += collision.VelocityDelta.Length()
+	}
+	return total, total > 1.0
+}
+
+func (zombie *Zombie) Respawn(bounds g.Rect) {
+	_, dead := zombie.DeathStrength()
+	if dead {
+		zombie.respawn(bounds)
+	}
 }
 
 func (zombie *Zombie) Render(game *Game) {
