@@ -27,7 +27,7 @@ func main() {
 
 	glfw.WindowHint(glfw.Samples, 4)
 
-	window, err := glfw.CreateWindow(800, 600, "Zombie Room", nil, nil)
+	window, err := glfw.CreateWindow(800, 600, "Zombies on Ice", nil, nil)
 	if err != nil {
 		panic(err)
 	}

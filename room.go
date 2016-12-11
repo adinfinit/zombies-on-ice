@@ -1,6 +1,6 @@
 package main
 
-import "github.com/loov/zombieroom/g"
+import "github.com/loov/zombies-on-ice/g"
 
 type Room struct {
 	Bounds g.Rect

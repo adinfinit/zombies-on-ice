@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/loov/zombieroom/g"
+	"github.com/loov/zombies-on-ice/g"
 )
 
 type Controller struct {
