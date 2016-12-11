@@ -50,6 +50,9 @@ func NewPlayer(id int) *Player {
 	player.Health = 1.0
 	player.Points = 0.0
 
+	player.Survivor.Position = g.V2{2, 0}.Rotate(g.Phi * float32(id))
+	player.Hammer.Position = g.V2{0.5, 0}.Rotate(g.Phi * float32(id))
+
 	player.Survivor.Radius = 0.5
 	player.Survivor.Mass = 5.0
 	player.Survivor.Elasticity = 0.2
