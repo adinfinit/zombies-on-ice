@@ -180,7 +180,7 @@ func (player *Player) Render(game *Game) {
 
 		tex := game.Assets.Texture("assets/health.png")
 		color := g.LerpColor(player.Color, g.Red, 1-player.Health)
-		tex.DrawColored(g.NewRect(player.Health, survivor.Radius/3), color)
+		tex.DrawColored(g.NewRect(player.Health, survivor.Radius/2), color)
 	}
 	gl.PopMatrix()
 
