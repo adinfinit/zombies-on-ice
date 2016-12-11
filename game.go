@@ -16,8 +16,6 @@ const (
 	ZombieLayer
 )
 
-// ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:?!-_~#"'&()[]|`\/@°+=*$£€<>%
-
 type Game struct {
 	Assets      *Assets
 	Font        *g.Font
@@ -94,6 +92,13 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			entities = append(entities, zombie.Entities()...)
 		}
 
+		playerBySurvivor := make(map[*Entity]*Player)
+		playerByHammer := make(map[*Entity]*Player)
+		for _, player := range game.Players {
+			playerBySurvivor[&player.Survivor] = player
+			playerByHammer[&player.Hammer.Entity] = player
+		}
+
 		// reset entities
 		for _, entity := range entities {
 			entity.ResetForces()
@@ -120,6 +125,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 				for _, collision := range zombie.Collision {
 					game.Particles.Spawn(32,
 						collision.A.Position, collision.B.Velocity, 0.1, 0.4)
+
+					playerByHammer[collision.B].Points += 1
 				}
 			}
 		}
@@ -159,7 +166,6 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 					player.Health -= g.Clamp01(collision.B.Velocity.Length()) * 0.1
 				}
 			}
-			player.Points += float32(len(player.Hammer.Collision))
 		}
 
 		// respawn dead players
