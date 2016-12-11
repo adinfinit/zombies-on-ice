@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 
@@ -46,7 +48,7 @@ func NewGame() *Game {
 	game.Room = NewRoom()
 	game.Particles = NewParticles()
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
 	}
 
@@ -229,7 +231,15 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		game.Particles.Render(game)
 
-		game.Font.Draw("Hello World", g.V2{0, 0}, 1)
+		zero := g.V2{
+			-screenSize.X/2 + 1,
+			screenSize.Y/2 - 2,
+		}
+
+		for _, player := range game.Players {
+			game.Font.DrawColored(fmt.Sprintf("%v", player.Points), zero, 1, player.Color)
+			zero.Y -= 0.7
+		}
 	}
 }
 

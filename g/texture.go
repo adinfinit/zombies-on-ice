@@ -139,6 +139,31 @@ func (tex *Texture) DrawSub(dst Rect, src Rect) {
 	gl.Disable(gl.TEXTURE_2D)
 }
 
+func (tex *Texture) DrawSubColored(dst Rect, src Rect, color Color) {
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+	{
+		gl.Color4ub(color.RGBA())
+		gl.Begin(gl.QUADS)
+		{
+			gl.TexCoord2f(src.Min.X, src.Max.Y)
+			gl.Vertex2f(dst.Min.X, dst.Min.Y)
+
+			gl.TexCoord2f(src.Max.X, src.Max.Y)
+			gl.Vertex2f(dst.Max.X, dst.Min.Y)
+
+			gl.TexCoord2f(src.Max.X, src.Min.Y)
+			gl.Vertex2f(dst.Max.X, dst.Max.Y)
+
+			gl.TexCoord2f(src.Min.X, src.Min.Y)
+			gl.Vertex2f(dst.Min.X, dst.Max.Y)
+		}
+		gl.End()
+	}
+	gl.Disable(gl.TEXTURE_2D)
+}
+
 func (tex *Texture) Line(from, to V2, width float32) {
 	length := to.Sub(from).Length()
 	normal := to.Sub(from).Rotate90().Normalize().Scale(width / 2)
