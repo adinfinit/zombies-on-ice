@@ -138,6 +138,30 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 			player.ApplyConstraints(game.Room.Bounds)
 		}
 
+		// count points
+		for _, player := range game.Players {
+			for _, collision := range player.Survivor.Collision {
+				if collision.B == &player.Hammer.Entity {
+					continue
+				}
+				if collision.B.CollisionLayer == ZombieLayer {
+					player.Health -= 0.01
+				}
+				if collision.B.CollisionLayer == HammerLayer {
+					player.Health -= g.Clamp01(collision.B.Velocity.Length()) * 0.1
+				}
+			}
+			player.Points += float32(len(player.Hammer.Collision))
+		}
+
+		// respawn dead players
+		for _, player := range game.Players {
+			if player.Dead() {
+				game.Particles.Spawn(64, player.Survivor.Position, g.V2{5, 0}, 0.2, g.Tau)
+				player.Respawn()
+			}
+		}
+
 		// respawn dead zombies
 		for _, zombie := range game.Zombies {
 			zombie.Respawn(game.Room.Bounds)

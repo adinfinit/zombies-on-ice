@@ -18,7 +18,7 @@ type Zombie struct {
 func NewZombie(bounds g.Rect) *Zombie {
 	zombie := &Zombie{}
 
-	zombie.Respawn(bounds)
+	zombie.respawn(bounds)
 
 	zombie.Elasticity = 0.2
 	zombie.Mass = 0.5

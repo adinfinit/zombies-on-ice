@@ -10,6 +10,9 @@ type Player struct {
 	ID    int
 	Color g.Color
 
+	Health float32
+	Points float32
+
 	Controller Controller
 	Survivor   Entity
 	Hammer     Hammer
@@ -41,13 +44,16 @@ func NewPlayer(id int) *Player {
 	player.ID = id
 	player.Color = g.ColorHSL(float32(id)*g.Phi, 0.9, 0.6)
 
+	player.Health = 1.0
+	player.Points = 0.0
+
 	player.Survivor.Radius = 0.5
 	player.Survivor.Mass = 1.0
 	player.Survivor.Elasticity = 0.2
 	player.Survivor.Dampening = 0.999
 
 	player.Survivor.CollisionLayer = PlayerLayer
-	player.Survivor.CollisionMask = HammerLayer
+	player.Survivor.CollisionMask = HammerLayer | ZombieLayer
 
 	player.Hammer.Mass = 0.05
 	player.Hammer.Elasticity = 0.4
@@ -59,9 +65,17 @@ func NewPlayer(id int) *Player {
 	player.Hammer.Dampening = 0.999
 
 	player.Hammer.CollisionLayer = HammerLayer
-	player.Hammer.CollisionMask = 0
+	player.Hammer.CollisionMask = ZombieLayer
 
 	return player
+}
+
+func (player *Player) Dead() bool {
+	return player.Health < 0.0
+}
+
+func (player *Player) Respawn() {
+	*player = *NewPlayer(player.ID)
 }
 
 func (player *Player) Update(dt float32) {
@@ -144,7 +158,7 @@ func (player *Player) Render(game *Game) {
 
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
-		tex := game.Assets.TextureRepeat("assets/player.png")
+		tex := game.Assets.Texture("assets/player.png")
 		tex.DrawColored(g.NewCircleRect(survivor.Radius), player.Color)
 	}
 	gl.PopMatrix()
@@ -155,8 +169,19 @@ func (player *Player) Render(game *Game) {
 
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
-		tex := game.Assets.TextureRepeat("assets/hammer.png")
+		tex := game.Assets.Texture("assets/hammer.png")
 		tex.DrawColored(g.NewCircleRect(hammer.Radius), player.Color)
 	}
 	gl.PopMatrix()
+
+	gl.PushMatrix()
+	{
+		gl.Translatef(survivor.Position.X, survivor.Position.Y+survivor.Radius+survivor.Radius/3, 0)
+
+		tex := game.Assets.Texture("assets/health.png")
+		color := g.LerpColor(player.Color, g.Red, 1-player.Health)
+		tex.DrawColored(g.NewRect(player.Health, survivor.Radius/3), color)
+	}
+	gl.PopMatrix()
+
 }

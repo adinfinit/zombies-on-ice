@@ -2,6 +2,18 @@ package g
 
 type Color struct{ R, G, B, A uint8 }
 
+func LerpColor(a, b Color, p float32) Color {
+	ar, ag, ab, aa := a.Float()
+	br, bg, bb, ba := b.Float()
+
+	return ColorFloat(
+		LerpClamp(ar, br, p),
+		LerpClamp(ag, bg, p),
+		LerpClamp(ab, bb, p),
+		LerpClamp(aa, ba, p),
+	)
+}
+
 var (
 	Red   = Color{0xFF, 0x00, 0x00, 0xFF}
 	Green = Color{0x00, 0xFF, 0x00, 0xFF}

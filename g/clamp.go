@@ -10,8 +10,8 @@ func Clamp(a, low, high float32) float32 {
 	return a
 }
 
-// Clamp1 clamps value to 0..1
-func Clamp1(a float32) float32 {
+// Clamp01 clamps value to 0..1
+func Clamp01(a float32) float32 {
 	if a < 0 {
 		return 0
 	} else if a > 1 {
