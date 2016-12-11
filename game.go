@@ -14,6 +14,7 @@ const (
 	PlayerLayer
 	HammerLayer
 	ZombieLayer
+	PowerupLayer
 )
 
 type Game struct {
@@ -24,6 +25,7 @@ type Game struct {
 	Room      *Room
 	Players   []*Player
 	Zombies   []*Zombie
+	Powerups  []*Powerup
 	Particles *Particles
 
 	CameraShake float32
@@ -48,6 +50,10 @@ func NewGame() *Game {
 
 	for i := 0; i < 20; i++ {
 		game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
+	}
+
+	for i := 0; i < 10; i++ {
+		game.Powerups = append(game.Powerups, NewPowerup(game.Room.Bounds))
 	}
 
 	return game
@@ -87,9 +93,11 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, player := range game.Players {
 			entities = append(entities, player.Entities()...)
 		}
-
 		for _, zombie := range game.Zombies {
 			entities = append(entities, zombie.Entities()...)
+		}
+		for _, powerup := range game.Powerups {
+			entities = append(entities, powerup.Entities()...)
 		}
 
 		playerBySurvivor := make(map[*Entity]*Player)
@@ -112,6 +120,11 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		// update zombies
 		for _, zombie := range game.Zombies {
 			zombie.Update(game, dt)
+		}
+
+		// update powerups
+		for _, powerup := range game.Powerups {
+			powerup.Update(dt)
 		}
 
 		// update collision info
@@ -167,6 +180,20 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 				}
 			}
 		}
+
+		// update powerups
+		powerups := []*Powerup{}
+		for _, powerup := range game.Powerups {
+			if powerup.Done() {
+				if len(powerup.Collision) > 0 {
+					player := playerBySurvivor[powerup.Collision[0].B]
+					powerup.Apply(player)
+				}
+			} else {
+				powerups = append(powerups, powerup)
+			}
+		}
+		game.Powerups = powerups
 
 		// respawn dead players
 		for _, player := range game.Players {
@@ -235,6 +262,10 @@ func (game *Game) Render(window *glfw.Window) {
 
 	for _, player := range game.Players {
 		player.Render(game)
+	}
+
+	for _, powerup := range game.Powerups {
+		powerup.Render(game)
 	}
 
 	game.Particles.Render(game)
