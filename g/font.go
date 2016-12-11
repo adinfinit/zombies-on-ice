@@ -14,6 +14,13 @@ func (font *Font) Width(text string, glyphHeight float32) float32 {
 	return glyphWidth * float32(len(text))
 }
 
+func (font *Font) DrawLines(lines []string, position V2, glyphHeight, lineHeight float32) {
+	for _, line := range lines {
+		font.Draw(line, position, glyphHeight)
+		position.Y -= lineHeight
+	}
+}
+
 func (font *Font) Draw(text string, position V2, glyphHeight float32) {
 	if font.GlyphsPerRow == 0 {
 		font.GlyphsPerRow = int(font.Texture.Size.X / font.GlyphSize.X)

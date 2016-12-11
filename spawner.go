@@ -7,6 +7,8 @@ import (
 )
 
 type Spawner struct {
+	NoPlayers bool
+
 	DeathVisuals bool
 
 	Wave                int
@@ -65,7 +67,8 @@ func (spawner *Spawner) Update(game *Game, dt float32) {
 	spawner.DisplayWaveMessage -= dt
 	spawner.DisplayDeathMessage -= dt
 
-	if len(game.Players) == 0 {
+	spawner.NoPlayers = len(game.Players) == 0
+	if spawner.NoPlayers {
 		return
 	}
 
@@ -101,6 +104,16 @@ func (spawner *Spawner) Update(game *Game, dt float32) {
 }
 
 func (spawner *Spawner) Render(game *Game) {
+	if spawner.NoPlayers {
+		game.Font.DrawLines([]string{
+			"Press WASD",
+			"Press Arrows",
+			"Press Start on Gamepad",
+		}, g.V2{-12.0, 1.0}, 2.0, 1.5)
+
+		return
+	}
+
 	if spawner.DeathVisuals {
 		text := fmt.Sprintf("Death at Wave %v", spawner.Wave)
 		height := float32(3.0)
