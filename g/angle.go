@@ -2,8 +2,11 @@ package g
 
 import "math"
 
-const Pi = math.Pi
-const Tau = Pi * 2
+const (
+	Pi  = math.Pi
+	Tau = Pi * 2
+	Phi = math.Phi
+)
 
 type Radian float32
 

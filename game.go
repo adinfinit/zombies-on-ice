@@ -27,6 +27,8 @@ type Game struct {
 	CameraShake float32
 
 	Clock float64
+
+	lastPlayerID int
 }
 
 func NewGame() *Game {
@@ -63,7 +65,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		for _, plugged := range game.Controllers.Plugged {
 			if plugged.Controller == nil {
-				player := NewPlayer()
+				game.lastPlayerID++
+				player := NewPlayer(game.lastPlayerID)
 				plugged.Controller = &player.Controller
 				active = append(active, player)
 			}

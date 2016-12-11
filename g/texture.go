@@ -86,6 +86,31 @@ func (tex *Texture) Draw(dst Rect) {
 	gl.Disable(gl.TEXTURE_2D)
 }
 
+func (tex *Texture) DrawColored(dst Rect, color Color) {
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+	{
+		gl.Color4f(color.Float())
+		gl.Begin(gl.QUADS)
+		{
+			gl.TexCoord2f(0, 1)
+			gl.Vertex2f(dst.Min.X, dst.Min.Y)
+
+			gl.TexCoord2f(1, 1)
+			gl.Vertex2f(dst.Max.X, dst.Min.Y)
+
+			gl.TexCoord2f(1, 0)
+			gl.Vertex2f(dst.Max.X, dst.Max.Y)
+
+			gl.TexCoord2f(0, 0)
+			gl.Vertex2f(dst.Min.X, dst.Max.Y)
+		}
+		gl.End()
+	}
+	gl.Disable(gl.TEXTURE_2D)
+}
+
 func (tex *Texture) DrawSub(dst Rect, src Rect) {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.Enable(gl.TEXTURE_2D)
@@ -120,6 +145,34 @@ func (tex *Texture) Line(from, to V2, width float32) {
 	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
 	{
 		gl.Color4f(1, 1, 1, 1)
+		gl.Begin(gl.QUADS)
+		{
+			gl.TexCoord2f(0, length)
+			gl.Vertex2f(from.Sub(normal).XY())
+
+			gl.TexCoord2f(1, length)
+			gl.Vertex2f(from.Add(normal).XY())
+
+			gl.TexCoord2f(1, 0)
+			gl.Vertex2f(to.Add(normal).XY())
+
+			gl.TexCoord2f(0, 0)
+			gl.Vertex2f(to.Sub(normal).XY())
+		}
+		gl.End()
+	}
+	gl.Disable(gl.TEXTURE_2D)
+}
+
+func (tex *Texture) LineColored(from, to V2, width float32, color Color) {
+	length := to.Sub(from).Length()
+	normal := to.Sub(from).Rotate90().Normalize().Scale(width / 2)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
+	{
+		gl.Color4f(color.Float())
 		gl.Begin(gl.QUADS)
 		{
 			gl.TexCoord2f(0, length)

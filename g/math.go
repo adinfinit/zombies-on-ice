@@ -59,3 +59,7 @@ func Abs(a float32) float32 {
 	}
 	return a
 }
+
+func Mod(x, y float32) float32 {
+	return float32(math.Mod(float64(x), float64(y)))
+}

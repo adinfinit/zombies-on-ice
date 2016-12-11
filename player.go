@@ -7,6 +7,9 @@ import (
 )
 
 type Player struct {
+	ID    int
+	Color g.Color
+
 	Controller Controller
 	Survivor   Entity
 	Hammer     Hammer
@@ -32,8 +35,11 @@ type Hammer struct {
 	VelocityDampening float32
 }
 
-func NewPlayer() *Player {
+func NewPlayer(id int) *Player {
 	player := &Player{}
+
+	player.ID = id
+	player.Color = g.ColorHSL(float32(id)*g.Phi, 0.9, 0.6)
 
 	player.Survivor.Radius = 0.5
 	player.Survivor.Mass = 1.0
@@ -123,10 +129,11 @@ func (player *Player) Render(game *Game) {
 
 	{
 		rope := game.Assets.TextureRepeat("assets/rope.png")
-		rope.Line(
+		rope.LineColored(
 			hammer.Position,
 			survivor.Position,
-			hammer.Radius/2)
+			hammer.Radius/2,
+			player.Color)
 	}
 
 	rotation := -(survivor.Position.Sub(hammer.Position).Angle() - g.Tau/4)
@@ -138,7 +145,7 @@ func (player *Player) Render(game *Game) {
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/player.png")
-		tex.Draw(g.NewCircleRect(survivor.Radius))
+		tex.DrawColored(g.NewCircleRect(survivor.Radius), player.Color)
 	}
 	gl.PopMatrix()
 
@@ -149,7 +156,7 @@ func (player *Player) Render(game *Game) {
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/hammer.png")
-		tex.Draw(g.NewCircleRect(hammer.Radius))
+		tex.DrawColored(g.NewCircleRect(hammer.Radius), player.Color)
 	}
 	gl.PopMatrix()
 }
