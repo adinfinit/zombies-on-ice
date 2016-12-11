@@ -13,6 +13,7 @@ type Powerup struct {
 
 	Health       float32
 	HammerRadius float32
+	HammerMass   float32
 }
 
 func NewPowerup(bounds g.Rect) *Powerup {
@@ -28,7 +29,8 @@ func NewPowerup(bounds g.Rect) *Powerup {
 	powerup.Life = 10.0
 
 	powerup.Health = 0.5
-	powerup.HammerRadius = 0.2
+	powerup.HammerRadius = 0.15
+	powerup.HammerMass = 0.5
 
 	return powerup
 }
@@ -49,6 +51,7 @@ func (powerup *Powerup) Done() bool {
 func (powerup *Powerup) Apply(player *Player) {
 	player.Health = g.Clamp01(player.Health + powerup.Health)
 	player.Hammer.Radius += powerup.HammerRadius
+	player.Hammer.Mass += powerup.HammerMass
 }
 
 func (powerup *Powerup) Render(game *Game) {

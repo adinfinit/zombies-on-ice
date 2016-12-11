@@ -97,6 +97,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		// list all entities
 		entities := []*Entity{}
 		for _, player := range game.Players {
+			if player.Dead {
+				continue
+			}
 			entities = append(entities, player.Entities()...)
 		}
 		for _, zombie := range game.Zombies {
@@ -120,6 +123,9 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		// update survivors and hammers
 		for _, player := range game.Players {
+			if player.Dead {
+				continue
+			}
 			player.Update(dt)
 		}
 
@@ -169,11 +175,19 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		// apply constraints
 		for _, player := range game.Players {
+			if player.Dead {
+				continue
+			}
+
 			player.ApplyConstraints(game.Room.Bounds)
 		}
 
 		// count points
 		for _, player := range game.Players {
+			if player.Dead {
+				continue
+			}
+
 			for _, collision := range player.Survivor.Collision {
 				if collision.B == &player.Hammer.Entity {
 					continue
@@ -203,9 +217,13 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 		// respawn dead players
 		for _, player := range game.Players {
-			if player.Dead() {
+			if player.Dead {
+				continue
+			}
+
+			if player.Died() {
 				game.Particles.Spawn(64, player.Survivor.Position, g.V2{5, 0}, 0.2, g.Tau)
-				player.Respawn()
+				player.Dead = true
 			}
 		}
 
@@ -271,6 +289,9 @@ func (game *Game) Render(window *glfw.Window) {
 	}
 
 	for _, player := range game.Players {
+		if player.Dead {
+			continue
+		}
 		player.Render(game)
 	}
 
@@ -286,7 +307,11 @@ func (game *Game) Render(window *glfw.Window) {
 	}
 
 	for _, player := range game.Players {
-		game.Font.DrawColored(fmt.Sprintf("%v", player.Points), zero, 1, player.Color)
+		text := fmt.Sprintf("%v", player.Points)
+		if player.Dead {
+			text = "X " + text
+		}
+		game.Font.DrawColored(text, zero, 1, player.Color)
 		zero.Y -= 0.7
 	}
 

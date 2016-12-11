@@ -10,6 +10,7 @@ type Player struct {
 	ID    int
 	Color g.Color
 
+	Dead   bool
 	Health float32
 	Points float32
 
@@ -72,7 +73,7 @@ func NewPlayer(id int) *Player {
 	return player
 }
 
-func (player *Player) Dead() bool {
+func (player *Player) Died() bool {
 	return player.Health < 0.0
 }
 

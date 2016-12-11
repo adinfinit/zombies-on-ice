@@ -37,6 +37,10 @@ func (zombie *Zombie) Update(game *Game, dt float32) {
 	var nearest *Entity
 	mindist := float32(1000000.0)
 	for _, player := range game.Players {
+		if player.Dead {
+			continue
+		}
+
 		dist := player.Survivor.Position.Sub(zombie.Position).Length()
 		if dist < mindist {
 			nearest = &player.Survivor
