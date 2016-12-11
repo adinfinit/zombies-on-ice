@@ -5,8 +5,16 @@ import (
 	"github.com/loov/zombieroom/g"
 )
 
+const (
+	DecalFadeTime = 15.0
+	DecalMax      = 20.0
+)
+
 type Particles struct {
 	List []*Particle
+
+	DecalHead int
+	Decals    [2048]Particle
 }
 
 type Particle struct {
@@ -16,6 +24,7 @@ type Particle struct {
 	AngularVelocity float32
 	Radius          float32
 	Life            float32
+	Fade            float32
 }
 
 func NewParticles() *Particles { return &Particles{} }
@@ -30,12 +39,16 @@ func (ps *Particles) Spawn(amount int, position g.V2, velocity g.V2, radius floa
 			Rotation:        g.RandomBetween(0, 7),
 			AngularVelocity: g.RandomBetween(-spread, spread),
 			Radius:          g.RandomBetween(radius, radius*2),
-			Life:            1,
+			Life:            g.RandomBetween(0.1, 0.5),
 		})
 	}
 }
 
 func (ps *Particles) Update(dt float32) {
+	for i := range ps.Decals {
+		ps.Decals[i].Fade -= dt
+	}
+
 	for _, p := range ps.List {
 		p.Position = p.Position.AddScale(p.Velocity, dt)
 		p.Velocity = p.Velocity.Scale(g.Pow(0.9, dt))
@@ -45,14 +58,49 @@ func (ps *Particles) Update(dt float32) {
 	}
 }
 
+func (ps *Particles) decalize(p *Particle) {
+	ps.DecalHead = ps.DecalHead + 1
+	if ps.DecalHead >= len(ps.Decals) {
+		ps.DecalHead = 0
+	}
+
+	p.Fade = DecalFadeTime
+	ps.Decals[ps.DecalHead] = *p
+}
+
 func (ps *Particles) Kill(bounds g.Rect) {
 	list := ps.List[:0:cap(ps.List)]
 	for _, p := range ps.List {
-		if p.Life > 0.0 && p.Radius > 0.0 && bounds.Contains(p.Position) {
-			list = append(list, p)
+		if p.Radius < 0.0 {
+			continue
 		}
+		if p.Life < 0.0 || !bounds.Contains(p.Position) {
+			g.EnforceInside(&p.Position, &p.Velocity, bounds, 0.0)
+			ps.decalize(p)
+			continue
+		}
+		list = append(list, p)
 	}
 	ps.List = list
+}
+
+func (ps *Particles) RenderDecals(game *Game) {
+	tex := game.Assets.TextureRepeat("assets/blood.png")
+	for i := range ps.Decals {
+		p := &ps.Decals[i]
+		if p.Fade <= 0 {
+			continue
+		}
+
+		gl.PushMatrix()
+		gl.Translatef(p.Position.X, p.Position.Y, 0)
+		gl.Rotatef(g.RadToDeg(p.Rotation), 0, 0, -1)
+
+		sat := g.Sat8(p.Fade / DecalMax)
+		color := g.Color{sat, sat, sat, sat}
+		tex.DrawColored(g.NewCircleRect(p.Radius), color)
+		gl.PopMatrix()
+	}
 }
 
 func (ps *Particles) Render(game *Game) {

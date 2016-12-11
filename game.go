@@ -109,7 +109,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		for _, zombie := range game.Zombies {
 			for _, collision := range zombie.Collision {
 				amount += collision.VelocityDelta.Length()
-				game.Particles.Spawn(16, collision.A.Position, collision.B.Velocity, 0.1, 0.4)
+				game.Particles.Spawn(32, collision.A.Position, collision.B.Velocity, 0.1, 0.4)
 			}
 		}
 		game.CameraShake += amount * 0.05
@@ -183,6 +183,8 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 
 	{
 		game.Room.Render(game)
+
+		game.Particles.RenderDecals(game)
 
 		for _, zombie := range game.Zombies {
 			zombie.Render(game)

@@ -91,7 +91,7 @@ func (tex *Texture) DrawColored(dst Rect, color Color) {
 	gl.Enable(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
 	{
-		gl.Color4f(color.Float())
+		gl.Color4ub(color.RGBA())
 		gl.Begin(gl.QUADS)
 		{
 			gl.TexCoord2f(0, 1)
@@ -172,7 +172,7 @@ func (tex *Texture) LineColored(from, to V2, width float32, color Color) {
 	gl.Enable(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, tex.ID)
 	{
-		gl.Color4f(color.Float())
+		gl.Color4ub(color.RGBA())
 		gl.Begin(gl.QUADS)
 		{
 			gl.TexCoord2f(0, length)

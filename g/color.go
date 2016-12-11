@@ -18,7 +18,7 @@ func ColorHex(hex uint32) Color {
 }
 
 func ColorFloat(r, g, b, a float32) Color {
-	return Color{sat8(r), sat8(g), sat8(b), sat8(a)}
+	return Color{Sat8(r), Sat8(g), Sat8(b), Sat8(a)}
 }
 
 func ColorHSLA(h, s, l, a float32) Color { return ColorFloat(hsla(h, s, l, a)) }
@@ -75,7 +75,8 @@ func hsla(h, s, l, a float32) (r, g, b, ra float32) {
 
 	return
 }
-func sat8(v float32) uint8 {
+
+func Sat8(v float32) uint8 {
 	v *= 255.0
 	if v >= 255 {
 		return 255
