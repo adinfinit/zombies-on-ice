@@ -11,8 +11,9 @@ type Room struct {
 func NewRoom() *Room {
 	room := &Room{}
 
-	room.Bounds.Min = g.V2{-14, -8}
-	room.Bounds.Max = g.V2{14, 8}
+	//1600, 1000
+	room.Bounds.Min = g.V2{-16, -10}
+	room.Bounds.Max = g.V2{16, 10}
 	room.TextureScale = 0.5
 
 	return room
