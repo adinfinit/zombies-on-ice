@@ -7,6 +7,8 @@ import (
 
 type Zombie struct {
 	Entity
+
+	Direction g.V2
 }
 
 func NewZombie(bounds g.Rect) *Zombie {
@@ -18,6 +20,8 @@ func NewZombie(bounds g.Rect) *Zombie {
 	zombie.Mass = 1.0
 	zombie.Dampening = 0.999
 	zombie.Radius = 0.5
+
+	zombie.Direction = g.V2{}
 
 	zombie.CollisionLayer = ZombieLayer
 	zombie.CollisionMask = HammerLayer
@@ -40,7 +44,9 @@ func (zombie *Zombie) Update(game *Game, dt float32) {
 		return
 	}
 
-	zombie.Velocity = nearest.Position.Sub(zombie.Position).Normalize().Scale(0.5)
+	target := nearest.Position.Sub(zombie.Position).Normalize().Scale(g.Pow(0.5, dt))
+	zombie.Velocity = zombie.Velocity.Add(target).Normalize().Scale(0.5)
+	zombie.Direction = zombie.Direction.Add(zombie.Velocity.Scale(g.Pow(0.5, dt))).Normalize()
 }
 
 func (zombie *Zombie) Respawn(bounds g.Rect) {
@@ -52,11 +58,11 @@ func (zombie *Zombie) Respawn(bounds g.Rect) {
 }
 
 func (zombie *Zombie) Render(game *Game) {
-	rotation := float32(0)
 	gl.PushMatrix()
 	{
 		gl.Translatef(zombie.Position.X, zombie.Position.Y, 0)
 
+		rotation := -(zombie.Velocity.Angle() + g.Tau/4)
 		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
 
 		tex := game.Assets.TextureRepeat("assets/zombie.png")

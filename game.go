@@ -131,7 +131,7 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 		}
 
 		// respawn dead zombies
-		for _, zombie := range game.Zombies {
+		for _, zombie := range game.Zombies[:0] {
 			zombie.Respawn(game.Room.Bounds)
 		}
 
