@@ -143,10 +143,20 @@ func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 	}
 
 	button := func(i int) bool {
-		if i < len(buttons) {
-			return buttons[i] == 1
+		if i >= len(buttons) {
+			return false
 		}
-		return false
+		return buttons[i] == 1
+	}
+
+	axis := func(ix, iy int) g.V2 {
+		if ix >= len(axes) || iy >= len(axes) {
+			return g.V2{}
+		}
+		return g.V2{
+			X: g.ApplyDeadZone(axes[ix], gamepad.DeadZone),
+			Y: -g.ApplyDeadZone(axes[iy], gamepad.DeadZone),
+		}
 	}
 
 	input.DPad.Up = button(10)
@@ -162,17 +172,11 @@ func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 	input.Back = button(6)
 	input.Start = button(7)
 
-	input.Left.Direction = g.V2{ // left thumb
-		X: g.ApplyDeadZone(axes[0], gamepad.DeadZone),
-		Y: -g.ApplyDeadZone(axes[1], gamepad.DeadZone),
-	}
-	input.Left.Hold = button(8)    // left thumb pressed
-	input.Left.Trigger = button(4) // left trigger
+	input.Left.Direction = axis(0, 1) // left thumb
+	input.Left.Hold = button(8)       // left thumb pressed
+	input.Left.Trigger = button(4)    // left trigger
 
-	input.Right.Direction = g.V2{ // right thumb
-		X: g.ApplyDeadZone(axes[4], gamepad.DeadZone),
-		Y: -g.ApplyDeadZone(axes[3], gamepad.DeadZone),
-	}
-	input.Right.Hold = button(9)    // right thumb pressed
-	input.Right.Trigger = button(5) // right trigger
+	input.Right.Direction = axis(4, 3) // right thumb
+	input.Right.Hold = button(9)       // right thumb pressed
+	input.Right.Trigger = button(5)    // right trigger
 }
