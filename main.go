@@ -20,7 +20,6 @@ func main() {
 	defer glfw.Terminate()
 
 	glfw.WindowHint(glfw.Resizable, glfw.True)
-	glfw.WindowHint(glfw.Visible, glfw.False) // do not steal focus
 
 	glfw.WindowHint(glfw.ContextVersionMajor, 2)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
@@ -32,9 +31,10 @@ func main() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
-	window.Restore() // do not steal focus
 
-	window.SetPos(32, 64)
+	if runtime.GOOS == "windows" {
+		window.SetPos(32, 64)
+	}
 
 	if err := gl.Init(); err != nil {
 		panic(err)
