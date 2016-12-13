@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type Controllers struct {
@@ -83,6 +83,8 @@ var (
 
 		A: glfw.KeyO,
 		B: glfw.KeyP,
+		X: glfw.KeyPause,
+		Y: glfw.KeyPause,
 	}
 
 	Keyboard_1 = Keyboard{
@@ -96,6 +98,8 @@ var (
 
 		A: glfw.KeyTab,
 		B: glfw.KeyQ,
+		X: glfw.KeyPause,
+		Y: glfw.KeyPause,
 	}
 
 	Gamepad_0 = Gamepad{glfw.Joystick1, 0.05}
