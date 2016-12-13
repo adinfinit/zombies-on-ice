@@ -88,18 +88,26 @@ type Keyboard struct {
 }
 
 func (key *Keyboard) Update(input *Controller, window *glfw.Window) {
-	input.DPad.Up = window.GetKey(key.Up) == glfw.Press
-	input.DPad.Down = window.GetKey(key.Down) == glfw.Press
-	input.DPad.Left = window.GetKey(key.Left) == glfw.Press
-	input.DPad.Right = window.GetKey(key.Right) == glfw.Press
+	getkey := func(button glfw.Key) bool {
+		if button == glfw.KeyUnknown || button == 0 {
+			return false
+		}
 
-	input.Start = window.GetKey(key.Start) == glfw.Press
-	input.Back = window.GetKey(key.Back) == glfw.Press
+		return window.GetKey(button) == glfw.Press
+	}
 
-	input.A = window.GetKey(key.A) == glfw.Press
-	input.B = window.GetKey(key.B) == glfw.Press
-	input.X = window.GetKey(key.X) == glfw.Press
-	input.Y = window.GetKey(key.Y) == glfw.Press
+	input.DPad.Up = getkey(key.Up)
+	input.DPad.Down = getkey(key.Down)
+	input.DPad.Left = getkey(key.Left)
+	input.DPad.Right = getkey(key.Right)
+
+	input.Start = getkey(key.Start)
+	input.Back = getkey(key.Back)
+
+	input.A = getkey(key.A)
+	input.B = getkey(key.B)
+	input.X = getkey(key.X)
+	input.Y = getkey(key.Y)
 
 	input.Left = Analog{
 		Direction: input.DPad.Direction(),
@@ -134,30 +142,37 @@ func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 		return
 	}
 
-	input.DPad.Up = buttons[10] == 1
-	input.DPad.Right = buttons[11] == 1
-	input.DPad.Down = buttons[12] == 1
-	input.DPad.Left = buttons[13] == 1
+	button := func(i int) bool {
+		if i < len(buttons) {
+			return buttons[i] == 1
+		}
+		return false
+	}
 
-	input.A = buttons[0] == 1
-	input.B = buttons[1] == 1
-	input.X = buttons[2] == 1
-	input.Y = buttons[3] == 1
+	input.DPad.Up = button(10)
+	input.DPad.Right = button(11)
+	input.DPad.Down = button(12)
+	input.DPad.Left = button(13)
 
-	input.Back = buttons[6] == 1
-	input.Start = buttons[7] == 1
+	input.A = button(0)
+	input.B = button(1)
+	input.X = button(2)
+	input.Y = button(3)
+
+	input.Back = button(6)
+	input.Start = button(7)
 
 	input.Left.Direction = g.V2{ // left thumb
 		X: g.ApplyDeadZone(axes[0], gamepad.DeadZone),
 		Y: -g.ApplyDeadZone(axes[1], gamepad.DeadZone),
 	}
-	input.Left.Hold = buttons[8] == 1    // left thumb pressed
-	input.Left.Trigger = buttons[4] == 1 // left trigger
+	input.Left.Hold = button(8)    // left thumb pressed
+	input.Left.Trigger = button(4) // left trigger
 
 	input.Right.Direction = g.V2{ // right thumb
 		X: g.ApplyDeadZone(axes[4], gamepad.DeadZone),
 		Y: -g.ApplyDeadZone(axes[3], gamepad.DeadZone),
 	}
-	input.Right.Hold = buttons[9] == 1    // right thumb pressed
-	input.Right.Trigger = buttons[5] == 1 // right trigger
+	input.Right.Hold = button(9)    // right thumb pressed
+	input.Right.Trigger = button(5) // right trigger
 }

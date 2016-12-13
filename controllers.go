@@ -83,8 +83,6 @@ var (
 
 		A: glfw.KeyO,
 		B: glfw.KeyP,
-		X: glfw.KeyPause,
-		Y: glfw.KeyPause,
 	}
 
 	Keyboard_1 = Keyboard{
@@ -98,8 +96,6 @@ var (
 
 		A: glfw.KeyTab,
 		B: glfw.KeyQ,
-		X: glfw.KeyPause,
-		Y: glfw.KeyPause,
 	}
 
 	Gamepad_0 = Gamepad{glfw.Joystick1, 0.05}
