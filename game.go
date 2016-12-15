@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/loov/zombies-on-ice/g"
@@ -254,14 +253,7 @@ func (game *Game) Render(window *glfw.Window) {
 
 	screenBounds := g.NewCenteredRect(game.Room.Bounds.Size(), windowSize, 2)
 	game.Renderer.Ortho(screenBounds, -1, 1000)
-
-	gl.Translatef(g.RandomV2Circle(game.CameraShake).XYZ())
-
-	gl.Enable(gl.MULTISAMPLE)
-
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Enable(gl.ALPHA_TEST)
+	game.Renderer.Translate(g.RandomV2Circle(game.CameraShake))
 
 	// actual rendering
 	game.Room.Render(game)
@@ -296,7 +288,7 @@ func (game *Game) Render(window *glfw.Window) {
 		if player.Dead {
 			text = "X " + text
 		}
-		game.Font.DrawColored(text, zero, 1, player.Color)
+		game.Renderer.TextTint(game.Font, text, zero, 1, player.Color)
 		zero.Y -= 0.7
 	}
 

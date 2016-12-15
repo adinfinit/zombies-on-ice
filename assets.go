@@ -51,8 +51,5 @@ func (assets *Assets) texture(path string, repeat bool) *g.Texture {
 }
 
 func (assets *Assets) Unload() {
-	for _, tex := range assets.Textures {
-		tex.Delete()
-	}
 	*assets = *NewAssets()
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"math/rand"
 
-	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/loov/zombies-on-ice/g"
 )
 
@@ -103,24 +102,28 @@ func (zombie *Zombie) Respawn(bounds g.Rect) {
 }
 
 func (zombie *Zombie) Render(game *Game) {
-	gl.PushMatrix()
+	game.Renderer.PushMatrix()
 	{
-		gl.Translatef(zombie.Position.X, zombie.Position.Y, 0)
+		game.Renderer.Translate(zombie.Position)
 
 		rotation := -(zombie.Direction.Angle() + g.Tau/4)
-		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
+		game.Renderer.Rotate(rotation)
 
 		var tex *g.Texture
 		if zombie.Velocity.Length() < 0.1 {
-			tex = game.Assets.TextureRepeat("assets/zombie-idle.png")
+			tex = game.Assets.Texture("assets/zombie-idle.png")
 		} else {
 			if zombie.Frame&1 == 0 {
-				tex = game.Assets.TextureRepeat("assets/zombie-walk-0.png")
+				tex = game.Assets.Texture("assets/zombie-walk-0.png")
 			} else {
-				tex = game.Assets.TextureRepeat("assets/zombie-walk-1.png")
+				tex = game.Assets.Texture("assets/zombie-walk-1.png")
 			}
 		}
-		tex.Draw(g.NewCircleRect(zombie.Radius))
+
+		game.Renderer.Texture(
+			tex,
+			g.NewCircleRect(zombie.Radius),
+		)
 	}
-	gl.PopMatrix()
+	game.Renderer.PopMatrix()
 }

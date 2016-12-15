@@ -1,10 +1,6 @@
 package main
 
-import (
-	"github.com/go-gl/gl/v2.1/gl"
-
-	"github.com/loov/zombies-on-ice/g"
-)
+import "github.com/loov/zombies-on-ice/g"
 
 type Player struct {
 	ID    int
@@ -146,46 +142,51 @@ func (player *Player) Render(game *Game) {
 	survivor, hammer := &player.Survivor, &player.Hammer
 
 	{
-		rope := game.Assets.TextureRepeat("assets/rope.png")
-		rope.LineColored(
+		game.Renderer.LineTint(
+			game.Assets.TextureRepeat("assets/rope.png"),
 			hammer.Position,
 			survivor.Position,
 			hammer.Radius/2,
-			player.Color)
+			player.Color,
+		)
 	}
 
 	rotation := -(survivor.Position.Sub(hammer.Position).Angle() - g.Tau/4)
 
-	gl.PushMatrix()
+	game.Renderer.PushMatrix()
 	{
-		gl.Translatef(survivor.Position.X, survivor.Position.Y, 0)
-
-		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
-
-		tex := game.Assets.Texture("assets/player.png")
-		tex.DrawColored(g.NewCircleRect(survivor.Radius), player.Color)
+		game.Renderer.Translate(survivor.Position)
+		game.Renderer.Rotate(rotation)
+		game.Renderer.TextureTint(
+			game.Assets.Texture("assets/player.png"),
+			g.NewCircleRect(survivor.Radius),
+			player.Color,
+		)
 	}
-	gl.PopMatrix()
+	game.Renderer.PopMatrix()
 
-	gl.PushMatrix()
+	game.Renderer.PushMatrix()
 	{
-		gl.Translatef(hammer.Position.X, hammer.Position.Y, 0)
-
-		gl.Rotatef(g.RadToDeg(rotation), 0, 0, -1)
-
-		tex := game.Assets.Texture("assets/hammer.png")
-		tex.DrawColored(g.NewCircleRect(hammer.Radius), player.Color)
+		game.Renderer.Translate(hammer.Position)
+		game.Renderer.Rotate(rotation)
+		game.Renderer.TextureTint(
+			game.Assets.Texture("assets/hammer.png"),
+			g.NewCircleRect(hammer.Radius),
+			player.Color,
+		)
 	}
-	gl.PopMatrix()
+	game.Renderer.PopMatrix()
 
-	gl.PushMatrix()
+	game.Renderer.PushMatrix()
 	{
-		gl.Translatef(survivor.Position.X, survivor.Position.Y+survivor.Radius+survivor.Radius/3, 0)
+		game.Renderer.Translate(survivor.Position.Add(g.V2{0, survivor.Radius * 4 / 3}))
 
-		tex := game.Assets.Texture("assets/health.png")
 		color := g.LerpColor(player.Color, g.Red, 1-player.Health)
-		tex.DrawColored(g.NewRect(player.Health, survivor.Radius/2), color)
+		game.Renderer.TextureTint(
+			game.Assets.Texture("assets/health.png"),
+			g.NewRect(player.Health, survivor.Radius/2),
+			color,
+		)
 	}
-	gl.PopMatrix()
-
+	game.Renderer.PopMatrix()
 }

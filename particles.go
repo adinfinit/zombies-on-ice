@@ -1,9 +1,6 @@
 package main
 
-import (
-	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/loov/zombies-on-ice/g"
-)
+import "github.com/loov/zombies-on-ice/g"
 
 const (
 	DecalFadeTime = 15.0
@@ -92,24 +89,24 @@ func (ps *Particles) RenderDecals(game *Game) {
 			continue
 		}
 
-		gl.PushMatrix()
-		gl.Translatef(p.Position.X, p.Position.Y, 0)
-		gl.Rotatef(g.RadToDeg(p.Rotation), 0, 0, -1)
-
 		sat := g.Sat8(p.Fade / DecalMax)
 		color := g.Color{sat, sat, sat, sat}
-		tex.DrawColored(g.NewCircleRect(p.Radius), color)
-		gl.PopMatrix()
+
+		game.Renderer.PushMatrix()
+		game.Renderer.Translate(p.Position)
+		game.Renderer.Rotate(p.Rotation)
+		game.Renderer.TextureTint(tex, g.NewCircleRect(p.Radius), color)
+		game.Renderer.PopMatrix()
 	}
 }
 
 func (ps *Particles) Render(game *Game) {
 	tex := game.Assets.TextureRepeat("assets/blood.png")
 	for _, p := range ps.List {
-		gl.PushMatrix()
-		gl.Translatef(p.Position.X, p.Position.Y, 0)
-		gl.Rotatef(g.RadToDeg(p.Rotation), 0, 0, -1)
-		tex.Draw(g.NewCircleRect(p.Radius))
-		gl.PopMatrix()
+		game.Renderer.PushMatrix()
+		game.Renderer.Translate(p.Position)
+		game.Renderer.Rotate(p.Rotation)
+		game.Renderer.Texture(tex, g.NewCircleRect(p.Radius))
+		game.Renderer.PopMatrix()
 	}
 }

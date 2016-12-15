@@ -1,9 +1,6 @@
 package main
 
-import (
-	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/loov/zombies-on-ice/g"
-)
+import "github.com/loov/zombies-on-ice/g"
 
 type Powerup struct {
 	Entity
@@ -61,13 +58,15 @@ func (powerup *Powerup) Render(game *Game) {
 		}
 	}
 
-	gl.PushMatrix()
+	game.Renderer.PushMatrix()
 	{
-		gl.Translatef(powerup.Position.X, powerup.Position.Y, 0)
-		gl.Rotatef(g.RadToDeg(powerup.Rotation), 0, 0, -1)
+		game.Renderer.Translate(powerup.Position)
+		game.Renderer.Rotate(powerup.Rotation)
 
-		tex := game.Assets.Texture("assets/healthpack.png")
-		tex.Draw(g.NewCircleRect(powerup.Radius))
+		game.Renderer.Texture(
+			game.Assets.Texture("assets/healthpack.png"),
+			g.NewCircleRect(powerup.Radius),
+		)
 	}
-	gl.PopMatrix()
+	game.Renderer.PopMatrix()
 }

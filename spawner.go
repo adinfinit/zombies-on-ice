@@ -105,12 +105,14 @@ func (spawner *Spawner) Update(game *Game, dt float32) {
 
 func (spawner *Spawner) Render(game *Game) {
 	if spawner.NoPlayers {
-		game.Font.DrawLines([]string{
-			"Press WASD",
-			"Press Arrows",
-			"Press Start on Gamepad",
-		}, g.V2{-12.0, 1.0}, 2.0, 1.5)
-
+		game.Renderer.TextLines(
+			game.Font,
+			[]string{
+				"Press WASD",
+				"Press Arrows",
+				"Press Start on Gamepad",
+			}, g.V2{-12.0, 1.0}, 2.0, 1.5,
+		)
 		return
 	}
 
@@ -119,13 +121,14 @@ func (spawner *Spawner) Render(game *Game) {
 		height := float32(3.0)
 		width := game.Font.Width(text, height)
 		pos := g.V2{-width / 2, height / 2}
-		game.Font.Draw(text, pos, height)
+		game.Renderer.Text(game.Font, text, pos, height)
+
 		pos.Y -= height * 0.7
 
 		height = 2.0
 		for i, player := range game.Players {
 			text := fmt.Sprintf("%d# %d points", i, int(player.Points))
-			game.Font.DrawColored(text, pos, height, player.Color)
+			game.Renderer.TextTint(game.Font, text, pos, height, player.Color)
 
 			pos.Y -= height * 0.7
 		}
@@ -139,5 +142,5 @@ func (spawner *Spawner) Render(game *Game) {
 	text := fmt.Sprintf("Wave %v", spawner.Wave)
 	height := float32(3.0)
 	width := game.Font.Width(text, height)
-	game.Font.Draw(text, g.V2{-width / 2, height / 2}, height)
+	game.Renderer.Text(game.Font, text, g.V2{-width / 2, height / 2}, height)
 }

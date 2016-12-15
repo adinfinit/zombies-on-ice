@@ -1,6 +1,8 @@
 package render
 
 import (
+	"fmt"
+
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/loov/zombies-on-ice/g"
 )
@@ -34,4 +36,11 @@ func (state *State) Ray(position, direction g.V2, color g.Color) {
 		gl.Vertex2f(position.Add(direction).XY())
 	}
 	gl.End()
+}
+
+func glerror() error {
+	if errcode := gl.GetError(); errcode != 0 {
+		return fmt.Errorf("bind error: %d", errcode)
+	}
+	return nil
 }
