@@ -5,8 +5,8 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/loov/zombies-on-ice/render"
 )
 
 func init() { runtime.LockOSThread() }
@@ -36,16 +36,16 @@ func main() {
 		window.SetPos(32, 64)
 	}
 
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
+	renderer := render.NewState()
 
 	game := NewGame()
+	game.Renderer = renderer
 	game.Clock = glfw.GetTime()
 	for !window.ShouldClose() {
 		if window.GetKey(glfw.KeyF10) == glfw.Press {
 			game.Unload()
 			game = NewGame()
+			game.Renderer = renderer
 		}
 
 		game.Update(window, glfw.GetTime())

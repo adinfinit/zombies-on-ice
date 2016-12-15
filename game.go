@@ -53,16 +53,6 @@ func NewGame() *Game {
 
 	game.Spawner = NewSpawner()
 
-	game.Renderer = render.NewState()
-	/*
-		for i := 0; i < 20; i++ {
-			game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
-		}
-		for i := 0; i < 10; i++ {
-			game.Powerups = append(game.Powerups, NewPowerup(game.Room.Bounds))
-		}
-	*/
-
 	return game
 }
 

@@ -13,6 +13,10 @@ type State struct {
 }
 
 func NewState() *State {
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
 	return &State{
 		Background: g.Black,
 		Textures:   NewTextures(),
