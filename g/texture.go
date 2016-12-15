@@ -26,6 +26,14 @@ type Texture struct {
 	ID     uint32
 }
 
+func (tex *Texture) Bounds() Rect {
+	b := tex.RGBA.Bounds()
+	return Rect{
+		V2{float32(b.Min.X), float32(b.Min.Y)},
+		V2{float32(b.Max.X), float32(b.Max.Y)},
+	}
+}
+
 func (tex *Texture) check(err error) bool {
 	if err != nil {
 		if err != tex.lasterr {

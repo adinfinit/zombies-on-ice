@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 
 	"github.com/loov/zombies-on-ice/g"
+	"github.com/loov/zombies-on-ice/render"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 )
 
 type Game struct {
+	Renderer    *render.State
 	Assets      *Assets
 	Font        *g.Font
 	Controllers *Controllers
@@ -51,6 +53,8 @@ func NewGame() *Game {
 	game.Particles = NewParticles()
 
 	game.Spawner = NewSpawner()
+
+	game.Renderer = render.NewState()
 	/*
 		for i := 0; i < 20; i++ {
 			game.Zombies = append(game.Zombies, NewZombie(game.Room.Bounds))
@@ -242,34 +246,14 @@ func (game *Game) Update(window *glfw.Window, now float64) {
 }
 
 func (game *Game) Render(window *glfw.Window) {
-	gl.ClearColor(0, 0, 0, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
-	gl.MatrixMode(gl.MODELVIEW)
-	gl.LoadIdentity()
-
 	width, height := window.GetSize()
-	gl.Viewport(0, 0, int32(width), int32(height))
+	windowSize := g.V2{float32(width), float32(height)}
 
-	screenRatio := float32(height) / float32(width)
-	roomSize := game.Room.Bounds.Size()
+	game.Renderer.BeginFrame(windowSize)
+	defer game.Renderer.EndFrame()
 
-	var screenSize g.V2
-	roomRatio := roomSize.Y / roomSize.X
-
-	if screenRatio < roomRatio {
-		screenSize.Y = roomSize.Y + 2
-		screenSize.X = screenSize.Y / screenRatio
-	} else {
-		screenSize.X = roomSize.X + 2
-		screenSize.Y = screenSize.X * screenRatio
-	}
-
-	gl.Ortho(
-		float64(-screenSize.X/2),
-		float64(screenSize.X/2),
-		float64(-screenSize.Y/2),
-		float64(screenSize.Y/2),
-		10, -10)
+	screenBounds := g.NewCenteredRect(game.Room.Bounds.Size(), windowSize, 2)
+	game.Renderer.Ortho(screenBounds, -1, 1000)
 
 	gl.Translatef(g.RandomV2Circle(game.CameraShake).XYZ())
 
@@ -301,6 +285,7 @@ func (game *Game) Render(window *glfw.Window) {
 
 	game.Particles.Render(game)
 
+	screenSize := screenBounds.Size()
 	zero := g.V2{
 		-screenSize.X/2 + 1,
 		screenSize.Y/2 - 2,

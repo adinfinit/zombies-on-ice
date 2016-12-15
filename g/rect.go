@@ -9,6 +9,23 @@ func NewRect(w, h float32) Rect {
 	}
 }
 
+// scales inner such that it matches bounds aspect ratio
+func NewCenteredRect(inner, bounds V2, margin float32) Rect {
+	boundsRatio := bounds.Y / bounds.X
+	innerRatio := inner.Y / inner.X
+
+	var size V2
+	if boundsRatio < innerRatio {
+		size.Y = inner.Y + margin
+		size.X = size.Y / boundsRatio
+	} else {
+		size.X = inner.X + margin
+		size.Y = size.X * boundsRatio
+	}
+
+	return NewRect(size.X, size.Y)
+}
+
 func NewCircleRect(r float32) Rect {
 	return Rect{V2{-r, -r}, V2{r, r}}
 }
