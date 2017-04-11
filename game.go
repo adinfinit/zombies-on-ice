@@ -247,7 +247,7 @@ func (game *Game) Render(window *glfw.Window) {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-	width, height := window.GetSize()
+	width, height := window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
 
 	screenRatio := float32(height) / float32(width)
