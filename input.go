@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/adinfinit/zombies-on-ice/g"
 )
@@ -135,8 +135,10 @@ func (gamepad Gamepad) Update(input *Controller, window *glfw.Window) {
 	// clear state
 	*input = Controller{ID: input.ID, Updater: input.Updater}
 
-	axes := glfw.GetJoystickAxes(gamepad.Id)
-	buttons := glfw.GetJoystickButtons(gamepad.Id)
+	joy := glfw.Joystick(gamepad.Id)
+
+	axes := joy.GetAxes()
+	buttons := joy.GetButtons()
 
 	input.Connected = len(axes) > 0 && len(buttons) > 0
 	if !input.Connected {
