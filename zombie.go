@@ -4,7 +4,8 @@ import (
 	"math/rand"
 
 	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/loov/zombies-on-ice/g"
+
+	"github.com/adinfinit/zombies-on-ice/g"
 )
 
 type Zombie struct {

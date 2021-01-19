@@ -6,7 +6,7 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 
-	"github.com/loov/zombies-on-ice/g"
+	"github.com/adinfinit/zombies-on-ice/g"
 )
 
 const (

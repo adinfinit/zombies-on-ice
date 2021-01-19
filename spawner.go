@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/loov/zombies-on-ice/g"
+	"github.com/adinfinit/zombies-on-ice/g"
 )
 
 type Spawner struct {
